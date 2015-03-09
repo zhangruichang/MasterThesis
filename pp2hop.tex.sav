@@ -1,0 +1,54 @@
+\chapter{图上隐私保护可达性查询算法}
+\rhead{图上隐私保护可达性查询算法}
+
+在本章中，我们重点详细介绍基于隐私保护的\hop 索引算法。在~\ref{sec:opt}节中，我们介绍一种新的启发式算法来代替$\maxDC$，使用该启发式算法能够使得\hop 索引最终的$\maxintr$能够尽可能的最小化。在~\ref{sec:add}中，我们提出了一种新的贪心算法，通过往~\ref{sec:opt}中得到的\hop 索引的$\lin$s和$\lout$s中加入尽可能少的代理点使得最终的所有的$\lin$s和$\lout$s两两的交集大小是完全一致。在~\ref{sec:encrypt}中，我们通过一定的加密算法对\hop 索引进行加密。在~\ref{sec:query}中，我们详细介绍在加密的索引条件下，安全的可达性查询如何进行。在~\ref{sec:analyse}中，我们对本文提出的隐私保护算法的隐私保护的作用进行分析。最后，我们通过实验对本文中提出的算法效果与效率进行实验的验证。
+
+
+ \section{具有Imax感知的2-hop算法}
+ \label{sec:opt}
+
+ 前面我们已经在表~\ref{table:symbol}中给出了$\maxintr$的定义，在实际中通过$\maxDC$启发式条件构建出的$\maxintr$通常非常大。在我们的实验中，通过$\maxDC$条件建立出来的$\maxintr$平均为378。在实验中，我们会发现比较大的$\maxintr$通常会导致需要加入非常多的代理节点以及会导致比较大的查询代价。
+
+ 在本节中，我们提出一个新的启发式条件使得在建立\hop 的过程中能够使得$\maxintr$尽可能的最小。其主要思想是在建立\hop 索引的过程中就将交集的信息考虑进去。详细的来说我们的目标主要是要去最小化以下的两个指标：
+ \begin{enumerate}
+ \item 由于在最原始的\hop 工作中，每次选择能够覆盖到未被覆盖的传递闭包集合$T'$中最多的元素的这样一个中心点$w$，通过这样的选择可以带来两方面的好处，一是可以使得中心点的数目较少，二是可以使得\hop 的索引大小较小
+
+ \item $max(|\lout(u) \cap \lin(v)|)$，也即使得所有$\lout(u)$和$\lin(v)$之间交集最大的交集大小能够尽可能的小
+\end{enumerate}
+
+ 为了实现以上的两个目标，我们提出了一下的启发式函数，我们把它称之为$\maxIS$，具体的定义如下：
+
+ \begin{equation}\label{equ:maxIS}
+    \maxIS = \frac{|\e_w \cap T'|}{max(|\lout(u) \cap \lin(v)|)},
+\end{equation}
+
+这里$u \in \l_w$, $v \in \r_w$, $T'$ 是传递闭包集合$T(\g)$中还未覆盖的的传递闭包集合条目。公式~\ref{equ:maxIS}主要包括以下两个部分：
+
+\begin{enumerate}%\addtolength{\itemsep}{-0.3\baselineskip}
+
+    \item  $\e_w \cap T'$ is the
+        uncovered elements in $T(G)$ covered by selecting $w$; and
+
+    \item  \begin{small}$max$\end{small}$(|\lout(u) \cap \lin(v)|)$
+     is
+        the largest  $|\lout(u) \cap \lin(v)|$ of all  $u,v \in V(\g)$.
+
+\end{enumerate}
+
+
+ \section{代理节点的添加算法}
+ \label{sec:add}
+
+
+ \section{索引加密处理算法}
+ \label{sec:encrypt}
+
+ \section{隐私保护的可达性查询处理}
+ \label{sec:query}
+
+
+ \section{图上隐私可达性保护算法的隐私分析}
+ \label{sec:analyse}
+
+ \section{实验结果}
+ \label{sec:experiment}

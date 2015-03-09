@@ -1,0 +1,272 @@
+\begin{thebibliography}{10}
+
+\bibitem{erdos}
+Pajek datasets.
+\newblock {\scriptsize\sl http://vlado.fmf.uni-lj.si/pub/networks/data/}, 2013.
+
+\bibitem{communication_networks}
+Stanford large network dataset collection.
+\newblock {\scriptsize\sl http://snap.stanford.edu/data/}, 2013.
+
+\bibitem{sigmod1989}
+R.~Agrawal, A.~Borgida, and H.~V. Jagadish.
+\newblock Efficient management of transitive relationships in large data and
+  knowledge bases.
+\newblock SIGMOD, 1989.
+
+\bibitem{biology}
+G.~D. Bader, M.~P. Cary, and C.~Sander.
+\newblock Pathguide: a pathway resource list.
+\newblock {\em Nucleic Acids Research}, 34(suppl 1):D504--D506, 2006.
+
+\bibitem{bhagat2009class}
+S.~Bhagat, G.~Cormode, B.~Krishnamurthy, and D.~Srivastava.
+\newblock Class-based graph anonymization for social network data.
+\newblock {\em Proceedings of the VLDB Endowment}, 2(1):766--777, 2009.
+
+\bibitem{byron}
+R.~Bramandia, B.~Choi, and W.~K. Ng.
+\newblock Incremental maintenance of 2-hop labeling of large graphs.
+\newblock {\em TKDE}, 22(5):682--698, 2010.
+
+\bibitem{pathhop}
+J.~Cai and C.~K. Poon.
+\newblock Path-hop: efficiently indexing large graphs for reachability queries.
+\newblock CIKM, pages 119--128, 2010.
+
+\bibitem{cao2011privacy}
+N.~Cao, Z.~Yang, C.~Wang, K.~Ren, and W.~Lou.
+\newblock Privacy-preserving query over encrypted graph-structured data in
+  cloud computing.
+\newblock In {\em Distributed Computing Systems (ICDCS), 2011 31st
+  International Conference on}, pages 393--402. IEEE, 2011.
+
+\bibitem{icdcs}
+N.~Cao, Z.~Yang, C.~Wang, K.~Ren, and W.~Lou.
+\newblock Privacy-preserving query over encrypted graph-structured data in
+  cloud computing.
+\newblock In {\em ICDCS}, pages 393--402, 2011.
+
+\bibitem{chen2005stack}
+L.~Chen, A.~Gupta, and M.~E. Kurul.
+\newblock Stack-based algorithms for pattern matching on dags.
+\newblock In {\em Proceedings of the 31st international conference on Very
+  large data bases}, pages 493--504. VLDB Endowment, 2005.
+
+\bibitem{chen2008efficient}
+Y.~Chen and Y.~Chen.
+\newblock An efficient algorithm for answering graph reachability queries.
+\newblock In {\em IEEE 24th International Conference on Data Engineering(ICDE
+  2008)}, pages 893--902. IEEE, 2008.
+
+\bibitem{k-isomorphism}
+J.~Cheng, A.~W.-c. Fu, and J.~Liu.
+\newblock K-isomorphism: privacy preserving network publication against
+  structural attacks.
+\newblock SIGMOD '10, pages 459--470, 2010.
+
+\bibitem{sigmod2013}
+J.~Cheng, S.~Huang, H.~Wu, and A.~Fu.
+\newblock Tf-label: a topological-folding labeling scheme for reachability
+  querying in a large graph.
+\newblock SIGMOD, pages 193--204, 2013.
+
+\bibitem{chengjf1}
+J.~Cheng, J.~X. Yu, X.~Lin, H.~Wang, and P.~S. Yu.
+\newblock Fast computation of reachability labeling for large graphs.
+\newblock EDBT, pages 961--979, 2006.
+
+\bibitem{chengjf2}
+J.~Cheng, J.~X. Yu, X.~Lin, H.~Wang, and P.~S. Yu.
+\newblock Fast computing reachability labelings for large graphs with high
+  compression rate.
+\newblock EDBT, pages 193--204, 2008.
+
+\bibitem{PIR}
+B.~{Chor et al.}
+\newblock Private information retrieval.
+\newblock {\em J. ACM}, 45:965--981, 1998.
+
+\bibitem{cohen}
+E.~{Cohen et al.}
+\newblock Reachability and distance queries via 2-hop labels.
+\newblock SODA, 2002.
+
+\bibitem{das2010anonymizing}
+S.~Das, O.~Egecioglu, and A.~El~Abbadi.
+\newblock Anonymizing weighted social network graphs.
+\newblock In {\em IEEE 26th International Conference on Data Engineering(ICDE
+  2010)}, pages 904--907. IEEE, 2010.
+
+\bibitem{elgamal}
+T.~El~Gamal.
+\newblock A public key cryptosystem and a signature scheme based on discrete
+  logarithms.
+\newblock In {\em CRYPTO}, pages 10--18, 1985.
+
+\bibitem{fan2011adding}
+W.~Fan, J.~Li, S.~Ma, N.~Tang, and Y.~Wu.
+\newblock Adding regular expressions to graph reachability and pattern queries.
+\newblock In {\em IEEE 27th International Conference on Data Engineering(ICDE
+  2011)}, pages 39--50. IEEE, 2011.
+
+\bibitem{zhe}
+Z.~Fan, Y.~Peng, B.~Choi, J.~Xu, and S.~S. Bhowmick.
+\newblock Towards efficient authenticated subgraph query service in outsourced
+  graph databases.
+\newblock {\em IEEE Transactions on Services Computing}, 99, 2013.
+
+\bibitem{Jeffery}
+J.~Gao, J.~X. Yu, R.~Jin, J.~Zhou, T.~Wang, and D.~Yang.
+\newblock Neighborhood-privacy protected shortest distance computing in cloud.
+\newblock SIGMOD, pages 409--420, 2011.
+
+\bibitem{edgeprivacy}
+X.~He, J.~Vaidya, B.~Shafiq, N.~Adam, and X.~Lin.
+\newblock Reachability analysis in privacy-preserving perturbed graphs.
+\newblock WI-IAT, pages 691--694, 2010.
+
+\bibitem{commercial}
+{Informatics Outsourcing}.
+\newblock {Outsourcing Solution Service}.
+\newblock {\scriptsize\sl http://www.informaticsoutsourcing.com/}.
+
+\bibitem{jagadish1990compression}
+H.~Jagadish.
+\newblock A compression technique to materialize transitive closure.
+\newblock {\em ACM Transactions on Database Systems (TODS)}, 15(4):558--598,
+  1990.
+
+\bibitem{sigmod2012}
+R.~Jin, N.~Ruan, S.~Dey, and J.~Y. Xu.
+\newblock Scarab: scaling reachability computation on large graphs.
+\newblock SIGMOD, pages 169--180, 2012.
+
+\bibitem{pathtree}
+R.~Jin, N.~Ruan, Y.~Xiang, and H.~Wang.
+\newblock Path-tree: An efficient reachability indexing scheme for large
+  directed graphs.
+\newblock {\em TODS}, pages 7:1--7:44, 2011.
+
+\bibitem{3hop}
+R.~Jin, Y.~Xiang, N.~Ruan, and D.~Fuhry.
+\newblock 3-hop: a high-compression indexing scheme for reachability query.
+\newblock SIGMOD, pages 813--826, 2009.
+
+\bibitem{jin2008efficiently}
+R.~Jin, Y.~Xiang, N.~Ruan, and H.~Wang.
+\newblock Efficiently answering reachability queries on very large directed
+  graphs.
+\newblock In {\em Proceedings of the 2008 ACM SIGMOD international conference
+  on Management of data}, pages 595--608. ACM, 2008.
+
+\bibitem{subgraph+count}
+V.~Karwa, S.~Raskhodnikova, A.~Smith, and G.~Yaroslavtsev.
+\newblock Private analysis of graph structure.
+\newblock In {\em VLDB}, pages 1146--1157, 2011.
+
+\bibitem{auth_graph_wo_leaking}
+A.~{Kundu et al.}
+\newblock How to authenticate graphs without leaking.
+\newblock In {\em EDBT}, pages 609--620, 2010.
+
+\bibitem{forest}
+A.~{Kundu et al.}
+\newblock Efficient leakage-free authentication of trees, graphs and forests.
+\newblock {\em IACR Cryptology ePrint Archive}, page~36, 2012.
+
+\bibitem{k-degree}
+K.~Liu and E.~Terzi.
+\newblock Towards identity anonymization on graphs.
+\newblock SIGMOD, pages 93--106, 2008.
+
+\bibitem{issues}
+D.~A. Menasc{\'e}.
+\newblock Qos issues in web services.
+\newblock {\em Internet Computing}, 6(6):72--75, Nov. 2002.
+
+\bibitem{sha}
+A.~J. Menezes, S.~A. Vanstone, and P.~C.~V. Oorschot.
+\newblock {\em Handbook of Applied Cryptography}.
+\newblock CRC Press, Inc., 1st edition, 1996.
+
+\bibitem{PIR+SP}
+K.~{Mouratidis et al.}
+\newblock Shortest path computation with no information leakage.
+\newblock {\em PVLDB}, 2012.
+
+\bibitem{hopi}
+R.~Schenkel, A.~Theobald, and G.~Weikum.
+\newblock {HOPI}: An efficient connection index for complex {XML} document
+  collections.
+\newblock In {\em EDBT}, pages 237--255, 2004.
+
+\bibitem{ferrari}
+S.~Seufert, A.~Anand, S.~Bedathur, and G.~Weikum.
+\newblock Ferrari: Flexible and efficient reachability range assignment for
+  graph indexing.
+\newblock ICDE, pages 1009--1020, 2013.
+
+\bibitem{simon1988improved}
+K.~Simon.
+\newblock An improved algorithm for transitive closure on acyclic digraphs.
+\newblock {\em Theoretical Computer Science}, 58(1):325--346, 1988.
+
+\bibitem{gripp}
+S.~Trissl and U.~Leser.
+\newblock Fast and practical indexing and querying of very large graphs.
+\newblock SIGMOD, pages 845--856, 2007.
+
+\bibitem{trissl2007fast}
+S.~Tri{\ss}l and U.~Leser.
+\newblock Fast and practical indexing and querying of very large graphs.
+\newblock In {\em Proceedings of the 2007 ACM SIGMOD international conference
+  on Management of data}, pages 845--856. ACM, 2007.
+
+\bibitem{bitcompression}
+S.~J. van Schaik and O.~de~Moor.
+\newblock A memory efficient reachability data structure through bit vector
+  compression.
+\newblock SIGMOD, pages 913--924, 2011.
+
+\bibitem{wang2006dual}
+H.~Wang, H.~He, J.~Yang, P.~S. Yu, and J.~X. Yu.
+\newblock Dual labeling: Answering graph reachability queries in constant time.
+\newblock In {\em Data Engineering, 2006. ICDE'06. Proceedings of the 22nd
+  International Conference on}, pages 75--75. IEEE, 2006.
+
+\bibitem{grail}
+H.~Yildirim, V.~Chaoji, and M.~J. Zaki.
+\newblock Grail: scalable reachability index for large graphs.
+\newblock {\em PVLDB}, 3(1-2):276--284, 2010.
+
+\bibitem{yu2010graph}
+J.~X. Yu and J.~Cheng.
+\newblock Graph reachability queries: A survey.
+\newblock In {\em Managing and Mining Graph Data}, pages 181--215. Springer,
+  2010.
+
+\bibitem{zheleva2008preserving}
+E.~Zheleva and L.~Getoor.
+\newblock Preserving the privacy of sensitive relationships in graph data.
+\newblock In {\em Privacy, security, and trust in KDD}, pages 153--171.
+  Springer, 2008.
+
+\bibitem{1-neighborhood}
+B.~Zhou and J.~Pei.
+\newblock Preserving privacy in social networks against neighborhood attacks.
+\newblock In {\em ICDE}, pages 506--515, 2008.
+
+\bibitem{generator}
+L.~Zhu, B.~Choi, B.~He, J.~X. Yu, and W.~K. Ng.
+\newblock A uniform framework for ad-hoc indexes to answer reachability queries
+  on large graphs.
+\newblock DASFAA, pages 138--152, 2009.
+
+\bibitem{k-automorphism}
+L.~Zou, L.~Chen, and M.~T. \"{O}zsu.
+\newblock k-automorphism: a general framework for privacy preserving network
+  publication.
+\newblock {\em VLDB}, pages 946--957, 2009.
+
+\end{thebibliography}
