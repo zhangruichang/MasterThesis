@@ -3,23 +3,31 @@
 \rhead{Abstract}
 %please write the english abstract here
 
-Due to the massive volume of graph data from a wide range of recent
-applications, such as social network, bioinformatics and XML data. At the same time, much more efficient and powerful resources required to process numerous queries.
-It is becoming economically appealing to outsource graph data to a third-party
-service provider (\SP) to provide query services. However, \SP\ cannot always
-be trusted. Hence, data owners and query clients may prefer not to expose their
-data graphs and queries.
+With the rapid development of high-throughput technologies,
+researchers can sequence the whole metagenome of a microbial community
+sampled directly from the environment. The assignment of these metagenomic
+reads into different species or taxonomical classes is a vital step for metagenomic
+analysis, which is referred to as binning  of metagenomic data.
 
-Reachiablity query is one of the most fundamental query in database area. This paper studies privacy-preserving query services
-for reachability query where both clients' queries and the structural information of the owner's data are protected.
-According to different types of graph data, we propose two different index method base on \hop\   labeling, named privacy-preserving \hop\  labeling (\pphop) and privacy-preserving minimum unified intesection \hop\  (\ppmuihop) . In these two methods, the reachability queries are
-computed in an encrypted domain and the input and output sizes of any queries
-are indistinguishable. We analyze the security of these two method with respect to ciphertext
-only and size based attacks. We verify the performance of \pphop\ and  \ppmuihop\ with an
-experimental study on both synthetic and real-world datasets.
+In this paper, we propose a new method TM-MCluster  for binning
+metagenomic reads. First, we represent each metagenomic read as a set of
+¡°k-mers¡± with their frequencies occurring in the read. Then, we employ a
+probabilistic topic model ¡ª the Latent Dirichlet Allocation (LDA) model to the
+reads, which generates a number of hidden ¡°topics¡± such that each read can be
+represented by a distribution vector of the generated topics. Finally, as in the
+MCluster method, we apply SKWIC ¡ª a variant of the classical K-means
+algorithm with automatic feature weighting mechanism to cluster these reads
+represented by topic distributions.
+
+Experiments show that the new method TM-MCluster outperforms
+major existing methods, including AbundanceBin, MetaCluster 3.0/5.0 and
+MCluster. This result indicates that the exploitation of topic modeling can
+effectively improve the binning performance of metagenomic reads.
+
+
 \bigskip
 \bigskip
 
-\noindent{\bf Keywords}: Graph data, Reachability Query, \hop , Index, Privacy Preserving Method, Query Service%key word
+\noindent{\bf Keywords}: Metagenomics, Metagenomic data binning, Topic modeling
 
  \noindent{\bf Classification Code}: TP311
