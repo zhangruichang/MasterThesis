@@ -1,126 +1,85 @@
-\chapter{问题定义与系统概述}
+\chapter{主题模型简介}
 \rhead{问题定义与系统概述}
+为了刻画近义词，计算word和doc距离，Deerwester于1990年提出了LSA(Latent Semantic Analysis)，为了更好刻画一次多义，采用多项式分布描述
+词频向量，并将LSA模型概率化，提出pLSA。2003年,David Belin和Andrew Ng将pLSA模型贝叶斯化，采用Dirichlet先验概率，提出经典的(Latent Dirichlet Allocation) LDA 模型。
 
-在本章中，我们将介绍本文研究的背景知识、问题的定义以及我们解决方案的一个概述。表~\ref{table:symbol}中列举出了本文中的常用符号。
+主题模型最初是用来处理由词袋模型表示的文档，并发掘潜在主题信息。主题表示隐含的语义主题信息，大量研究结果表明，主题模型比传统的基于关键词模型更能有效的描述文档之间的语义关系。
 
-\begin{table}[t]\label{table:symbol}
-    \caption{ 文中常用符号 }
-    \label{table:symbol}
-    \setlength{\tabcolsep}{1pt}
-    \centering
-    \begin{tabular}{p{4cm}|p{10cm}}
-        \hline
-        {\bf  符号} & {\bf 描述} \\
-        \hline
-        $\reach(u, v)$ & 一个可达性查询，查询$u$是否可以到达$v$ \\
-        \hline
-        $u \leadsto v$ & 图中的顶点$u$可以到达顶点$v$ \\
-        \hline
-        $u \not \leadsto v$ &图中的顶点$u$不可以到达顶点$v$ \\
-        \hline
-        $\lout(u)$, $\lin(u)$ & 顶点$u$的\hop\ 索引 \\
-        \hline
-        $\maxintr$ & $\maxintr = \forall u, v, max(|\lout(u) \cap \lin(v)|)$ \\
-        \hline
-        $\louts(u)$, $\lins(u)$ & 顶点$u$添加了人工点之后的\hop\ 索引  \\
-        \hline
-        $\loutmax$ ($\linmax$) &  $\louts$ ($\lins$) 中最大的集合的大小 \\
-        \hline
-        $\hash_{s}(\cdot)$ & 带有参数 $s$ 的hash函数\\
-        \hline
-        $\encrypt(\cdot)$, $K$ & Elgamal加密算法, 解密的密钥$K$ \\
-        \hline
-        $u_e \leadsto v_e$ & 一个加密的可达性查询  $u_e = \hash_{s_2}(u)$, $v_e =
-        \hash_{s_2}(v)$ \\
-        \hline
-        $\loute(u)$, $\line(u)$ & 顶点$u$的加密的\pphop \\
-        \hline
-        $\we$ & 加密的中心点$w$, $\we = \hash_{s_1}(w)$  \\
-        \hline
-        $\fe$ & 加密的标志位标志$f$, $\fe = \encrypt(f)$ \\
-        \hline
-        $R$ & $\line(u_e) \cap \loute(v_e)$的交集结果 \\
-        \hline
-        $\re$ & 服务端返回的加密了的可达性查询结果 \\
-        \hline
-    \end{tabular}
-\end{table}
+本文，我们将首先介绍LDA模型，然后描述如何运用LDA来抽取元基因组中的潜在主题信息。图1中描述了LDA模型。外部碟子表示文档，内部碟子表示一个文档中重复选择的文档和单词。
 
-\section{\hop 索引方法}
-\label{sec:2hop}
+一些符号表示如下：D表示文档个数，Nd表示第d篇文档的单词个数，W表示词典里单词总数，T表示主题的个数，alpha是每个文档主题分布Dirichlet先验的参数，
+beta是每个主题单词分布的Dirichlet先验的参数，thetad是文档d的主题分布，phij是主题j的单词分布。
 
-在本文中，我们考虑的是基于有向无环图的可达性查询。我们通常用$\g$来表示一个图数据，$V(\g)$ 和 $E(\g)$ 分别表示图的顶点集合和边的集合。由于在一个强连通分量里的各个点的可达性信息是完全一样的，所以在本文中，为了描述的方便性，我们假设所有的图为有向无环图(Directed Acyclic Graph，DAG)。对于图上的每一个点$u \in V(\g)$ 都具有两个顶点集合$\lout(u)$和$\lin(u)$，我们把这两个集合称之为顶点$u$的\hop 索引。对于$\lout(u)$集合中的点，表示可以从顶点$u$到达的点。对于$\lin(u)$集合中的点，表示这些点可以到达顶点$u$。 这些$\lin(u)$和$\lout(u)$集合中的点，我们称之为中心点。对于给定两个点$u$和$v$，做可达性查询$\reach$($u$, $v$)，我们称顶点$u$可以到达$v$ 当且仅当$\lout(u) \cap \lin(v) \neq \emptyset$，可以记作为$u \leadsto v$；否则如果$\lout(u) \cap \lin(v) = \emptyset$，我们称顶点$u$不可以到达顶点$v$，我们记作为$u \not \leadsto v$。为了保证图的顶点集合$v \in $$V(\g)$中所有顶点的\hop 索引信息能够包含图$\g$上顶点间所有的可达性信息，所以\hop 索引里包含的可达性信息必须包含图$\g$ 传递闭包集合$T(\g)$ 里面的所有元素。很明显，我们可以有很多种算法来计算图$\g$ 的\hop 索引。之前的大部分工作都希望建立出来的\hop 索引大小能够最小，索引的大小我们可以定义为$\sum_{u \in V(\g)}(|\lout(u)| + |\lin(u)|)$。
+LDA试图通过下面的过程来生成文档：
+1. 对于第d篇文档，用随机值初始化alpha，然后
 
+通过训练LDA模型，我可以得到每个序列的主题分布。图2表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
+我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100.
 
-\hop 的索引创建过程通常被认为非常耗时和对系统要求很高。尽管已经有很多工作(例如\cite{chengjf2})明显的优化了原始的\hop 的创建时间，但是实际上，\hop 的创建基本上都是离线建立的。由于生物信息网络、通信网络等等数据更新不是非常的频繁，所以这些数据的拥有者可以先在本地建立好相应图数据的\hop 索引，然后再将处理完的\hop 索引上传到服务商\SP ，使得可以支持高并发的可达性查询请求。
+\subsection*{Transforming reads from $k$-mer space to topic space}
+Topic models were originally proposed to discover latent topics from a set of documents that are represented by the bag-of-word model. Latent topics indicate implicit semantic topics in documents, which have been shown to be more effective in describing the semantic relationships among documents than traditional keyword based models. In metagenomics, reads can be seen as documents and $k$-mers as keywords in documents. Reads from the same species should share more similar latent ``topics'' than reads from different species. So ``topics'' may be more effective than $k$-mers in describing metagenomic reads as far as the binning problem is considered. Here, we use the Latent Dirichlet Allocation (LDA) --- a popular topic model from machine learning area cite{blei2003}. In what follows, we first introduce the LDA model, and then describe how to employ the LDA to extract latent topics from metagenomic reads.
+Fig.~\ref{fig:2} illustrates the LDA model. The outer plate represents documents, while the inner plate represents the repeated choice of topics and words within a document.
 
-我们在这里先简要介绍一下\cite{cohen}文章中建立\hop 的算法流程，我们在后面将针对我们的问题，提出针对这种原始的算法的改进算法。%这里可以加一个2hop的算法
-首先，我们用一个变量$T'$表示图$\g$的传递闭包$T(\g)$所有没有被覆盖到的元素，也即$T' = T(\g)$。通过不断的迭代，使得$T(\g)$中的元素不断的被覆盖并从$T'$中移除。当集合$T'$中的元素变为空时，以上的迭代结束。对于图中的每一个点$w \in\g$，都对其建立一个相应的二分无向图(也可称为中心图)$\g_w(\l_w, \r_w,\e_w)$，这里的$\l_w$是指所有的可以到到点$w$的点的集合，$\r_w$是所有点$w$可以到的点的集合。$(u, v) \in \e_w$ 当且仅当 $(u ,v)$ 在集合$T'$中。然后启发式算法每次选择一个中心点$w$，该中心点具有它对应的二分图$\g_w$中最大的$\maxDC$比例的子图$\g_i(\l_i,\r_i, \e_i)$。一个子图$\g_i(\l_i,\r_i, \e_i)$的$\maxDC$具体定义为：
-\begin{equation}\label{equ:2hop}
-\maxDC = \frac{|\e_i \cap T'|}{|\l_i \cup \r_i|}
-\end{equation}
-
-这个问题实际上就变为查找图$\g_w$的最大稠密子图。在每一次的循环中，具有最大的$\maxDC$的点$w$被选为一个中心点。对于所有的$ u \in \l_i$ 和 $v \in \r_i$，算法将中心点$w$加入到$\lout(u)$和$\lin(v)$中，并从$T'$中移除$(u, w)$,$(w, v)$和$(u, v)$。通过以上的$\maxDC$启发式方法，每次选择一个中心点，直到图$\g$的所有传递闭包元素$T(\g)$被覆盖完，算法结束。
-
-
-\begin{figure}
+\begin{figure}[h!]
 \centering
-\includegraphics[height=4cm ,width=10cm]{example/graph.eps}
-%\vspace{-2ex}
-\caption{图以及它的2-hop索引}
-\label{fig:graph}
-\end{figure}
+    \includegraphics[width=9cm]{./example/LDAModel.eps}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{\csentence{The LDA model.}}
+            \label{fig:1}
+      \end{figure}
 
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=7cm]{./example/LDARepresentation.eps}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{\csentence{Applying the LDA model to metagenomic reads.}}
+            \label{fig:2}
+      \end{figure}
 
+\iffalse
+Some notations are as follows: \emph{M} denotes the number of documents; $N_{i}$ means the number of words in the \emph{i}-th document; \emph{N} denotes the number of words in the vocabulary; \emph{K} denotes the number of topics; $\alpha$ (a $K$-dimensional vector) is the parameter of the Dirichlet prior on per-document topic distribution; $\beta$ (a \emph{N}-dimensional vector) is the parameter of the Dirichlet prior on per-topic word distribution; $\theta_{i}$ (a $K$-dimensional vector) is the topic distribution for document \emph{i}; $\phi_{k}$ (a \emph{N}-dimensional vector) is the word distribution for topic \emph{k}; $z_{ij}$ is the topic for the \emph{j}th word in document \emph{i}; $w_{ij}$ is the generated $j$-th word in document $i$.
 
-我们考虑图~\ref{fig:graph}中左边的这样一个代表生物网络的简单有向无环图。图中，顶点的标号表示一些化学物质的编号，图中的边表示两种物质之间的一种化学反应。图中所有的顶点的标签为了叙述的简洁性，我们在此略去。左图所对应的原始的\hop 索引文件见图~\ref{fig:graph}右边表格。我们考虑查询顶点1可不可以到达顶点5，也即查询$\reach(1,5)$，我们可以看到$\lout(1) \cap \lin(5) =\{5\}$，所以我们可以得到顶点1可以到达顶点5。然而对于顶点6到顶点0，由于$\lout(6) \cap\lin(0)=\emptyset$，所以我们说顶点6无法到达顶点0。在这里我们用一个简单的例子说明了\hop 索引是如何建立的，同时如何利用建立的\hop 索引进行可达性的查询。
+LDA tries to generate the documents by the following process~\cite{blei2003}:
+\begin{enumerate}
+\item For the \emph{i}-th document, initialize $\alpha$ with random value, then choose $\theta_{i}\sim$Dirichlet($\alpha$), where \emph{i}$\in$ {1,2...\emph{M}};
+\item For the \emph{j}-th word of the \emph{i}-th document, choose $z_{ij}\sim$Multinomial($\theta_{i}$), where \emph{i}$\in${1,2..\emph{M}}, \emph{j}$\in${1,2..$N_{i}$};
+\item Initialize $\beta$ with random value, then choose $\phi_{z_{ij}}\sim$Dirichlet($\beta$);
+\item Choose $w_{ij}\sim$Multinomial($\phi_{z_{ij}}$).
+\end{enumerate}
 
+After the document generating process, the estimation of LDA model can be implemented by the variational EM algorithm~\cite{blei2003} or Gibbs sampling~\cite{griffiths2004finding}.
 
-\section{密码学知识}
+The estimation of LDA  model  given  the  functional element abundance  data  can  be  estimated  via  the  Gibbs Sampling Monte Carlo process [8]. The estimation process requires a separately sampling   latent   topic   for   each functional element in each sample according to the posterior probability
 
-我们在第一章中介绍到，我们需要在加密的\hop 索引文件上进行可达性查询的处理。在本篇文章中，我们主要利用到以下两个密码学中的技术。
+In which is the total number of metagenomic reads
+assigned  to  latent  topic j except  for current functional
+element and  is  the  total  number  of  functional
+element s in  read d (except  for  wi) that  have  been
+assigned to topic j.
+\fi
 
-哈希函数就是把任意长度的输入，通过内部的散列算法，变换成固定长度的输出，这个输出就是散列值。这种转换是一种压缩映射，简单来说哈希函数是一种将任意长度的消息压缩到某一固定长度的消息摘要函数。通常一个哈希函数记为$hash()$。对于一个给定的数据值$m$，它的哈希值记为$hash(m)$。哈希函数具有以下两个特性：(1)单向性，也即对于一个给定的哈希值$hash(m)$，我们很难从这个哈希值推算出它原来的值。(2)抗冲突性，即通常对于不同的输入所产生的哈希值是一一对应的，很难找到两个不同的输入使得他们的哈希值一样。目前一种比较成熟和安全的哈希函数是SHA-1\cite{sha}。
+Some notations are as follows: \emph{D} denotes the number of documents; $N_{d}$ denotes the number of words in the \emph{d}-th document; \emph{W} denotes the number of words in the vocabulary; \emph{T} denotes the number of topics; $\alpha$ (a $T$-dimensional vector) is the parameter of the Dirichlet prior on per-document topic distribution; $\beta$ (a \emph{W}-dimensional vector) is the parameter of the Dirichlet prior on per-topic word distribution; $\theta_{d}$ (a $T$-dimensional vector) is the topic distribution for document \emph{d}; $\phi_{j}$ (a \emph{W}-dimensional vector) is the word distribution for topic \emph{j};
+%$z_{ij}$ is the topic for the \emph{j}th word in document \emph{i}; $w_{ij}$ is the generated $j$th word in document $i$.
 
-在密码学领域中，通常在哈希函数中通过引入一个参数，称之为盐，来提高哈希函数的随机性。通常带有一个参数的哈希函数记为$\hash_s()$。通过给定不同的盐参数，那么同样的哈希函数在相同的原始输入下所产生的输出是不同的。总结来说，如果$s_1 \neq s_2$，那么$\hash_{s_1}(m) \neq \hash_{s_2}(m)$，反之如果$s_1 = s_2$，则$\hash_{s_1}(m) = \hash_{s_2}(m)$。在本文中，我们使用了两个不同的盐参数来作为数据拥有着的私有密钥的一部分。
+LDA tries to generate the documents by the following process~\cite{blei2003}:
+\begin{enumerate}
+\item For the \emph{d}-th document, initialize $\alpha$ with random value, then choose $\theta_{d}\sim$Dirichlet($\alpha$), where \emph{d}$\in$ {1, 2, ..., \emph{D}};
+\item For the \emph{t}-th topic, initialize $\beta$ with random value, then choose $\phi_{t}\sim$Dirichlet($\beta$);
+\item For each word $w_{i}$ of the \emph{d}-th document, choose $z_{i}\sim$Multinomial($\theta_{d}$), and sample $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
+\end{enumerate}
 
-所谓乘法同态加密算法是指在它密文上进行的算法操作与在它明文上的乘法操作是同态的。一个乘法同态加密算法通常记为$\encrypt(\cdot)$，对于乘法同态的定义具体来说，给定两个密文$\encrypt(m_1)$和$\encrypt(m_2)$，我们可以直接在密文上进行乘法计算，它的结果等同于$\encrypt(m_1 \times m_2)$，那么我们对乘法后的密文用密钥$K$进行一次解密，那么就可以等到$m_1 \times m_2$的值。在乘法同态加密领域，目前比较流行的加密算法是Elgamal算法\cite{elgamal}。在这里值得一提的是，由于Elgamal算法在加密的时候引入了随机因子，所以Elgamal保证了加密后的结果的随机性，简单来说，对于同样的数据用Elgamal加密算法加密完的结果是不一样的。例如$m_1=m_2$，但是$\encrypt(m_1) \neq \encrypt(m_2)$。这一类加密算法在明文的域比较小的时候，作用就更加明显，可以通过算法中引入的随机因子，使得由明文较小的域变成密文后的域变大，防止通过基于频率的方法来对密文进行破解。
+We apply the LDA model to metagenomic sequences, where reads are treated as documents and $k$-mers are treated as words.
+Given a set of metagenomic reads, the estimation of LDA model can  be  estimated via the Gibbs Sampling Monte Carlo process~\cite{griffiths2004finding}. The estimation process requires a separately sampling of latent topics for each $k$-mer in each read according to the posterior probability:
+\begin{equation}\label{eq0}
+P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\beta +n^{w_{i}}_{-i,j}}{W\beta+n^{*}_{-i,j}}\cdot \frac{\alpha +n^{d}_{-i,j}}{T\alpha+n^{d}_{-i,*}}
+\end{equation}
+where $\mathbf{w{_{-i}}}$ is the current assignment $k$-mers except for $w_{i}$, $\mathbf{z{_{-w{_{i}}}}}$ is the current assignment topics of all $k$-mers except for $w_{i}$, $n^{w_{i}}_{-i,j}$ is the total number of $k$-mers assigned to latent topic $j$ except for the current $k$-mer $w_{i}$, $n^{d}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ in read $d$ that have been assigned to topic $j$, $n^{*}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ assigned to latent topic $j$, and $n^{d}_{-i,*}$ is the total number of $k$-mers except for $w_{i}$ in read $d$. In  our  model, we assume  symmetric
+priors  and  set  $\alpha$=0.1,  $\beta$=0.01. Such  a  parameter  setting  is to make  topic  modeling  results more  diverse.
 
-
-\section{可达性查询的隐私保护问题定义}
-\label{sec:def}
-
-在本节中，我们着重从数据模型、系统模型、隐私保护目标以及攻击模型等四个方面来对本文的研究问题进行定义。
-
-\paragraph {数据模型}
-我们首先给我本文中关于数据模型的定义。在本文中，我们考虑的是带有结点标签的有向图。我们用$\g$表示图数据库中的一个图数据，分别用$V(\g)$ 和$E(\g)$ 表示图的顶点集合和边的集合。由于在强连通分量里的所有点与其他点的可达性完全一致，所以为了在本文中叙述的简洁性，我们假设本文的讨论是基于有向无环图进行讨论，我们可以将所有的强连通分量转化为图中的一个点，在完成去掉强连通分量的图的索引建立后，我们可以通过很简单的方法，将强连通分量里每个点的可达性信息表达出来。一个可达性查询是指，输入两个查询点$u$ 和$v$，可以表示为$\reach$($u$,$v$)，当$u$可以到达顶点$v$时，返回true。
-
-\paragraph{系统模型}
-在本文中，我们遵循在数据库外包领域中最常见的系统模型来作为本文的系统模型的基础，这个模型见图~\ref{fig:overview}。这个模型主要有三个重要组成部分。
-
-\begin{itemize}
-\item{数据拥有者}，数据拥有者是指拥有图数据并且需要离线计算一次隐私保护的\hop 索引的一方。在建立好基于隐私保护的\hop 索引后，数据拥有者将索引数据外包给一个第三方服务提供商。并且，它还对已授权的用户提供一个盐随机因子$s_2$和一个私有密钥$K$。盐随机因子$s_2$是让用户用来对他的查询进行加密操作，私有密钥$K$用来对返回的结果进行解密。
-\item{服务提供商(\SP)}，服务提供商通常具有非常强大的计算能力(例如云计算平台)同时有非常专业的服务维护知识。服务提供商可以代替数据拥有着在密文基础上处理高并发的查询请求。并将计算好的密文结果返回给用户端。
-\item{客户端}，客户端在进行可达性查询$\reach$($u$,$v$)时，利用从数据拥有者处获得的$s_2$来对两个查询点进行哈希加密，并将加密后的查询请求发送到服务商\SP ，当客户端从\SP 处得到的返回的查询结果，用私钥$K$对返回的结果进行解密得到关于可达性查询的最终结果。在这里面我们假设客户端和服务商\SP 是不可以重叠的，也即\SP 不能是授权的客户端，否则它可以从数据拥有者获得两个密钥$s_2$和$K$，进而它可以还原整个图，造成了隐私的泄露。
-
-\end{itemize}
-
-\paragraph {隐私保护目标}
-在本文中，我们的隐私保护目标主要为了保护以下的两个方面的隐私，使得攻击者无法获取以下两方面的信息。
-\begin{itemize}
-\item{查询点之间的可达性信息}，这主要是希望对于给定的一个可达性查询$\reach$($u$,$v$)，我们不希望攻击者能够推断出是否顶点$u$可以到达顶点$v$。
-\item{图数据结构}，我们的目标使得攻击者无法从索引，以及通过不断的查询等方面来获取图的结构信息，让他们无法判断原图中两个点之间的边或者路径是否存在。
-\end{itemize}
-
-\paragraph {攻击模型}
-和其他所有的数据外包的研究工作中的假设一样，我们认为服务商\SP 是诚实但是具有好奇心的。为了描述的简单性，我们通常将\SP 视为攻击者。在本文中，我们假设\SP 可以采取以下的攻击方式来对系统进行攻击。
-\begin{itemize}
-\item{基于密文的攻击}，我们假设服务商\SP 只能访问到加密的图数据索引，他们不能获取关于原始图数据的任何信息。
-\item{基于集合大小的攻击}，我们假设\SP 尝试根据索引文件的大小和对查询结果的不同大小来进行信息的猜测。
-\end{itemize}
-在安全领域，可能还有很多的其他类型的攻击，例如信道攻击、查询路径攻击以及基于频率的攻击等等，为了系统分析的简单性和准确性，我们在本文中，不对此类攻击进行防范和保护。
+After training a LDA model, we can get the topic distribution of each read. Fig.~\ref{fig:3} illustrates the application of LDA to metagenomic reads. The left layer represents the DNA reads, the middle layer represents topics, and the right layer represents $k$-mers. We use the topic distribution of each read to represent the read. As the number of topics is usually smaller than the number of $k$-mers, this process is equivalent to dimension reduction. Here, the number of topics is a tunable parameter. In our experimental study, we set it to be 20 and 100 for simulated data and real data, respectively.
 
 
 \section{本章小结}
-在本章中，我们对原始的2-hop索引方法进行了详细介绍，并对哈希方法和乘法同态加密算法进行了介绍。在本章最后，我们对本文中的研究问题，就数据模型、系统模型、隐私保护目标和攻击模型等四个方面对本文的研究问题进行定义。
+在本章中，我们介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA的来龙去脉，如何提出LDA模型，如何去求解，等等。
+在文档处理中，LDA因为可以抽取文档的主题信息，提取语义信息而受到广泛的关注。最初由于Variation Bayesian的方法求解
 
