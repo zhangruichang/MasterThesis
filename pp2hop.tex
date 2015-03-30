@@ -1,10 +1,8 @@
 \chapter{基于主题模型的宏基因组聚类算法}
-\rhead{图上可达性查询的隐私保护算法}
+\rhead{基于主题模型的宏基因组聚类算法}
 
 本文提出的方法包含三步：1) 用k-mer频率向量来表示序列 2) 通过LDA模型，将每个k-mer频率向量转化为主题分布向量 3) 和MCluster一样，用SKWIC
 算法对向量化的序列进行聚类。图1中显示了TM-MCluster的工作流程，随后将给出每一步的具体细节。
-
-
 
 
  \section{用k-mer来表示序列}
@@ -15,6 +13,17 @@
   \section{将序列从k-mer空间转换到主题空间}
 元基因组中，序列被当成文档，k-mer被当成关键词，来自同一物种的序列应该比不同物种的序列有更多相似的主题信息，因此，对于目前考虑的
 归类问题，主题信息在描述元基因组序列方面可能比k-mer更有效。我们采用隐含狄利克雷分布(LDA)--一个机器学习领域非常流行的主题来处理这个问题。在上一章中，我们也对主题模型进行了介绍。
+
+图\cite{fig:2}表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
+我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100.
+
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=7cm]{./example/LDARepresentation.eps}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{Applying the LDA model to metagenomic reads.}
+            \label{fig:2}
+\end{figure}
 
 After training a LDA model, we can get the topic distribution of each read. Fig.~\ref{fig:3} illustrates the application of LDA to metagenomic reads. The left layer represents the DNA reads, the middle layer represents topics, and the right layer represents $k$-mers. We use the topic distribution of each read to represent the read. As the number of topics is usually smaller than the number of $k$-mers, this process is equivalent to dimension reduction. Here, the number of topics is a tunable parameter. In our experimental study, we set it to be 20 and 100 for simulated data and real data, respectively.
 \section{用SKWIC算法对向量化的序列进行聚类}
@@ -68,6 +77,10 @@ SKWIC的聚类过程就是重复下面的步骤直到类中心不变或者变化范围足够小：
 \item 更新每个类的类中心;
 \item 利用公式~\eqref{eq4}更新$\delta_{i}$
 \end{enumerate}
+\section{本章小结}
+本章中，我们详细的描述我们的算法，首先用N gram模型来进行特征提取，然后运用LDA模型将序列从K-mer空间映射到主题空间，
+最后和MCluster类似，运用SKWIC算法对序列进行聚类。
+
 
 
 

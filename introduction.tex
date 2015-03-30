@@ -10,42 +10,11 @@
 宏基因组序列来自多个微生物基因组，并且通常
 大多数宏基因组序列所在的物种名是未知的。
 宏基因组分析的关键步骤就是将同一物种的DNA片段聚在一起。
-这个任务被称为宏基因组序列的归类\ref{mavromatis2007use}。迄今为止，研究人员已经提出了大量的计算方法来解决这个问题。这些方法可以粗略的归为两类：基于相似度和基于组成成分。
-
-基于相似度的方法首先将元基因组序列比对到已知的基因组，然后根据比对结构进行归类。其中一个典型的方法是MEGAN\ref{huson2009methods}.
-
-显然，如果没有已知的微生物基因组，这个方法不能用。基于组成成分的方法通常采用
-监督技术 将序列分配到不同的组。特征是直接从核苷酸序列从抽取的，包括寡核苷酸的频率
-GC含量，密码子的使用等等。到现在为止，SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm}等已经被用来对宏基因组序列进行归类。然而这些方法的性能仍然在很大程度上依赖于作为训练样本的基因组。
-为了克服这些方法的缺点以上，研究人员又提出非监督或半监管技术来处理未知物种的宏基因组数据。 Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin方法从序列中抽取K-mer，并利用K-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。Leung et al~\cite{leung2011robust}开发了MetaClus-3.0方法
-通过采用4-mer来构建特征向量。它采用K-meadian算法将序列分成小的簇，然后将较小的簇合并成大簇以使物种丰度较低的序列归类到孤立的簇。MetaCluster3.0 在序列长为1000bp的均匀和不均匀物种上的表现都优于AbundanceBin。随后，Wang等人提出了MetaCluster3.0的两个改进算法，MetaCluster4.0~\cite{wang2012metacluster1} 和MetaCluster5.0~\cite{wang2012metacluster2}，来处理
-处理短序列。MetaCluster4.0基于序列重叠性，将长度小于500bp的短序列组装为长序列
-但是，它处理低丰度的序列。MetaCluster5.0作为MetaCluster4.0的改进版，能够处理低丰度数据。2014年APBC会议上，WangYi等研究人员开发
-MetaCluster-TA~\cite{wang2014metacluster}，一个通过装配和归类来进行注释的序列分类注释工具。它先将短序列装配成长的“虚拟重叠群”，并
-然后应用类似于MetaCluster5.0的方法来对这些重叠群和序列进行聚类，
-并最后将所有的簇进行归类。这一系列的MetaCluster
-算法可以自动确定簇的数目，这
-对于真实数据中绝大多数序列的物种名未知时是至关重要的。
-
-
-
-最近廖瑞琪师兄还提出了一种新的非监督方法MCluster对宏基因组序列进行聚类~\cite{liao2014new}。 MCluster使用的N-gram提取序列特征
-，以及自动加权功能来改善的Kmeans算法的性能。实验结果表明，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster3.0明显更优的性能，
-在短序列上，和MetaCluster5.0相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure值。
-在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写).这个方法包含三步：1)用K-mer频率向量来表示序列 2)通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量 3)和MCluster~\cite{liao2014new}方法一样，用SKWIC 算法对这些转化后的序列进行聚类。
-
-我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster.
-实验结果表明，TM-MCluster在多数测试数据集上优于四个已有的聚类算法。
-
-
-
-在机器学习和自然语言处理，主题模型是一类在数据集中发现潜在主题信息的一类统计模型。
-主题模型最初是用于文本处理，随后被运用到图像，音频以及音乐处理。最近，有一些研究人员运用主题模型来处理生物数据，
-例如从MEDLINE的生物医学文献摘要中挖掘蛋白质相互作用网络~\cite{aso2009predicting,zheng2006identifying}，构建mRNA模型集合~\cite{gerber2007hierarchical}，以及研究宏基因组功能群落~\cite{chen2012exploiting}.
+这个任务被称为宏基因组序列的归类\ref{mavromatis2007use}。
 
 
 
 
 \section{本文结构}
-本文的组织结构如下：在第二章我们将介绍主题模型。第三章中，将介绍TM-MCluster方法的详细流程，如何将LDA运用到元基因组序列中。第四章，将介绍我们的方法在模拟数据以及真实数据上的实验结果，以及与已有的方法的全方面比较分析.第五章，进行总结，并对将来可以进一步改进的方向进行展望。
+本文的组织结构如下：在第二章我们将介绍元基因组归类问题的相关工作。第三章中，将介绍TM-MCluster方法的详细流程，包括了如何将LDA运用到元基因组序列中。第四章，将介绍我们的方法在模拟数据以及真实数据上的实验结果，以及与已有的方法的全方面比较分析.第五章，进行总结，并对将来可以进一步改进的方向进行展望。
 

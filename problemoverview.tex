@@ -1,27 +1,45 @@
-\chapter{主题模型简介}
-\rhead{问题定义与系统概述}
-为了刻画近义词，计算word和doc距离，Deerwester于1990年提出了LSA(Latent Semantic Analysis)，为了更好刻画一次多义，采用多项式分布描述
-词频向量，并将LSA模型概率化，提出pLSA。2003年,David Belin和Andrew Ng将pLSA模型贝叶斯化，采用Dirichlet先验概率，提出经典的(Latent Dirichlet Allocation) LDA 模型。
+\chapter{相关工作及主题模型}
+\rhead{已有的计算方法及主题模型简介}
+%summary
+\section{已有方法}
+迄今为止，研究人员已经提出了大量的计算方法来解决这个问题。这些方法可以粗略的归为两类：基于相似度和基于组成成分。
+基于相似度的方法首先将元基因组序列比对到已知的基因组，然后根据比对结构进行归类。其中一个典型的方法是MEGAN\ref{huson2009methods}.
 
-主题模型最初是用来处理由词袋模型表示的文档，并发掘潜在主题信息。主题表示隐含的语义主题信息，大量研究结果表明，主题模型比传统的基于关键词模型更能有效的描述文档之间的语义关系。
+\subsection{监督学习方法}
+%supervsied
+显然，如果没有已知的微生物基因组，这个方法不能用。基于组成成分的方法通常采用
+监督技术 将序列分配到不同的组。特征是直接从核苷酸序列从抽取的，包括寡核苷酸的频率
+GC含量，密码子的使用等等。到现在为止，SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm}等已经被用来对宏基因组序列进行归类。然而这些方法的性能仍然在很大程度上依赖于作为训练样本的基因组。
+\subsection{非监督学习方法}
+%unsupervised
+为了克服这些方法的缺点以上，研究人员又提出非监督或半监管技术来处理未知物种的宏基因组数据。 Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin方法从序列中抽取K-mer，并利用K-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。Leung等人~\cite{leung2011robust}开发了MetaCluster 3.0方法
+通过采用4-mer来构建特征向量。它采用K-meadian算法将序列分成小的簇，然后将较小的簇合并成大簇以使物种丰度较低的序列归类到孤立的簇。MetaCluster 3.0 在序列长为1000bp的均匀和不均匀物种上的表现都优于AbundanceBin。随后，Wang等人提出了MetaCluster3.0的两个改进算法，MetaCluster 4.0~\cite{wang2012metacluster1} 和MetaCluster5.0~\cite{wang2012metacluster2}，来处理
+处理短序列。MetaCluster 4.0基于序列重叠性，将长度小于500bp的短序列组装为长序列
+但是，它处理低丰度的序列。MetaCluster5.0作为MetaCluster4.0的改进版，能够处理低丰度数据。2014年APBC会议上，Wang Yi等研究人员开发
+MetaCluster-TA~\cite{wang2014metacluster}，一个通过装配和归类来进行注释的序列分类注释工具。它先将短序列装配成长的“虚拟重叠群”，并
+然后应用类似于MetaCluster 5.0的方法来对这些重叠群和序列进行聚类，
+并最后将所有的簇进行归类。这一系列的MetaCluster
+算法可以自动确定簇的数目，这对于真实数据中绝大多数序列的物种名未知时是至关重要的。
+最近廖瑞琪师兄还提出了一种新的非监督方法MCluster对宏基因组序列进行聚类~\cite{liao2014new}。 MCluster使用的N-gram提取序列特征
+，以及自动加权功能来改善的Kmeans算法的性能。实验结果表明，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster3.0明显更优的性能，在短序列上，和MetaCluster 5.0相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure值。
 
-本文，我们将首先介绍LDA模型，然后描述如何运用LDA来抽取元基因组中的潜在主题信息。图1中描述了LDA模型。外部碟子表示文档，内部碟子表示一个文档中重复选择的文档和单词。
+%our method
+在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写).这个方法包含三步：1)用K-mer频率向量来表示序列 2)通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量 3)和MCluster~\cite{liao2014new}方法一样，用SKWIC 算法对这些转化后的序列进行聚类。
 
-一些符号表示如下：D表示文档个数，Nd表示第d篇文档的单词个数，W表示词典里单词总数，T表示主题的个数，alpha是每个文档主题分布Dirichlet先验的参数，
-beta是每个主题单词分布的Dirichlet先验的参数，thetad是文档d的主题分布，phij是主题j的单词分布。
+我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster.
+实验结果表明，TM-MCluster在多数测试数据集上优于四个已有的聚类算法。
 
-LDA试图通过下面的过程来生成文档：
-1. 对于第d篇文档，用随机值初始化alpha，然后
+\section{主题模型简介}
+%LDA introduction
+在机器学习和自然语言处理，主题模型是一类在数据集中发现潜在主题信息的一类统计模型。
+主题模型最初是用于文本处理，随后被运用到图像，音频以及音乐处理。最近，有一些研究人员运用主题模型来处理生物数据，
+例如从MEDLINE的生物医学文献摘要中挖掘蛋白质相互作用网络~\cite{aso2009predicting,zheng2006identifying}，构建mRNA模型集合~\cite{gerber2007hierarchical}，以及研究宏基因组功能群落~\cite{chen2012exploiting}.
+\subsection{LDA图模型}
+为了刻画近义词，计算word和doc距离，Deerwester于1990年提出了LSA(Latent Semantic Analysis);为了更好刻画一次多义，采用多项式分布描述词频向量，并将LSA模型概率化，提出pLSA; 2003年,David Belin和Andrew Ng将pLSA模型贝叶斯化，采用Dirichlet先验概率，提出经典的(Latent Dirichlet Allocation) LDA 模型。
 
-通过训练LDA模型，我可以得到每个序列的主题分布。图2表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
-我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100.
+主题模型最初是用来处理由词袋模型表示的文档，并挖掘潜在主题信息。主题表示隐含的语义主题信息，大量研究结果表明，主题模型比传统的基于关键词模型更能有效的描述文档之间的语义关系。
 
-
-
-Topic models were originally proposed to discover latent topics from a set of documents that are represented by the bag-of-word model. Latent topics indicate implicit semantic topics in documents, which have been shown to be more effective in describing the semantic relationships among documents than traditional keyword based models. In metagenomics, reads can be seen as documents and $k$-mers as keywords in documents. Reads from the same species should share more similar latent ``topics'' than reads from different species. So ``topics'' may be more effective than $k$-mers in describing metagenomic reads as far as the binning problem is considered. Here, we use the Latent Dirichlet Allocation (LDA) --- a popular topic model from machine learning area cite{blei2003}. In what follows, we first introduce the LDA model, and then describe how to employ the LDA to extract latent topics from metagenomic reads.
-Fig.~\ref{fig:2} illustrates the LDA model. The outer plate represents documents, while the inner plate represents the repeated choice of topics and words within a document.
-
-
+我们首先介绍LDA模型，然后描述如何运用LDA来抽取元基因组中的潜在主题信息。图\cite{fig:1}中描述了LDA模型。外部碟子表示文档，内部碟子表示一个文档中重复选择的文档和单词。
 
 \begin{figure}[h!]
 \centering
@@ -31,13 +49,7 @@ Fig.~\ref{fig:2} illustrates the LDA model. The outer plate represents documents
             \label{fig:1}
 \end{figure}
 
-\begin{figure}[h!]
-\centering
-    \includegraphics[width=7cm]{./example/LDARepresentation.eps}
-    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{Applying the LDA model to metagenomic reads.}
-            \label{fig:2}
-\end{figure}
+
 
 数学符号定义如下: \emph{D} 表示文档个数; $N_{d}$ 表示第 \emph{d} 篇文档的单词个数; \emph{W} 表示单词表中单词的个数; \emph{T} 表示主题个数; $\alpha$ ($T$ 维向量) 是每篇文档主题分布的狄利克雷先验的参数; $\beta$ (\emph{W}维向量) 是每个主题的单词分布的狄利克雷先验的参数; $\theta_{d}$ ($T$维向量) 是第\emph{d}篇文档的主题分布; $\phi_{j}$ (\emph{W}维向量)是主题\emph{j}的单词分布;
 %$z_{ij}$ is the topic for the \emph{j}th word in document \emph{i}; $w_{ij}$ is the generated $j$th word in document $i$.
@@ -48,34 +60,25 @@ LDA模型通过下面的过程来生成文档，因此也属于生成模型 cite{blei2003}:
 \item 对于第 \emph{t} 个主题, 初始化 $\beta$ 为随机值, 然后 $\phi_{t}\sim$Dirichlet($\beta$);
 \item 对于第 \emph{d}篇文档的$w_{i}$,  $z_{i}\sim$ Multinomial($\theta_{d}$), $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
 \end{enumerate}
-
-我们采样LDA模型来处理元基因组序列，序列看成文档，k-mer看成单词。对于给定的元基因组序列，LDA模型的估计可以采用吉布斯采样蒙特拉罗过程
-~\cite{griffiths2004finding}。根据后验概率， 估计过程需要单独为每个序列每个k-mer进行采样：
-
+\subsection{Gibbs Sampling方法求解LDA}
+我们采用LDA模型来处理元基因组序列，序列看成文档，k-mer看成单词。对于给定的元基因组序列，LDA模型的估计可以采用吉布斯采样蒙特拉罗过程
+~\cite{griffiths2004finding}。根据后验概率，估计过程需要单独为每个序列每个k-mer进行采样：
 
 \begin{equation}\label{eq0}
 P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\beta +n^{w_{i}}_{-i,j}}{W\beta+n^{*}_{-i,j}}\cdot \frac{\alpha +n^{d}_{-i,j}}{T\alpha+n^{d}_{-i,*}}
 \end{equation}
 
-$\mathbf{w{_{-i}}}$ 是指除了$w_{i}$以外指派的$k$-mer, 
-$\mathbf{z{_{-w{_{i}}}}}$ 是指除了$w_{i}$以外为所有$k$-mer 指派的topic 
+$\mathbf{w{_{-i}}}$ 是指除了$w_{i}$以外指派的$k$-mer,
+$\mathbf{z{_{-w{_{i}}}}}$ 是指除了$w_{i}$以外为所有$k$-mer 指派的topic
 $n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为k-mer指定的topic是j的个数，
 $n^{d}_{-i,j}$ 是指序列d中，除了$w_{i}$以外，指定topic为j的k-mer总数
 $n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为j的k-mer总数，
 $n^{d}_{-i,*}$ 是指序列d中除了$w_{i}$以外的$k$-mers总数
 
-
-where $\mathbf{w{_{-i}}}$ is the current assignment $k$-mers except for $w_{i}$, 
-$\mathbf{z{_{-w{_{i}}}}}$ is the current assignment topics of all $k$-mers except for $w_{i}$, 
-$n^{w_{i}}_{-i,j}$ is the total number of $k$-mers assigned to latent topic $j$ except for the current $k$-mer $w_{i}$, 
-$n^{d}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ in read $d$ that have been assigned to topic $j$, 
-$n^{*}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ assigned to latent topic $j$, 
-and $n^{d}_{-i,*}$ is the total number of $k$-mers except for $w_{i}$ in read $d$.
-
-
+通过训练LDA模型，我可以得到每个序列的主题分布。
 在我们的模型中，我们设定Dirichlet先验的参数$\alpha$=0.1,  $\beta$=0.01, 这样的参数设定是为了使得主题模型的结果多种多样的。
 
 
 \section{本章小结}
-在本章中，我们介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA的来龙去脉，如何提出LDA模型，如何去求解，等等。在文档处理中，LDA因为可以抽取文档的主题信息，提取语义信息而受到广泛的关注。最初由于Variation Bayesian的方法求解
+在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法。最后介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，如何提出LDA 模型，如何去求解，等等。在文档处理中，LDA因为可以抽取文档的主题信息，提取语义信息而受到广泛的关注。
 
