@@ -1,241 +1,383 @@
-\chapter{稀疏图上可达性查询隐私保护方法}
-\rhead{稀疏图上可达性查询隐私保护方法}
+\chapter{模拟数据，真实数据上的实验结果，及比较分析}
+\rhead{实验结果}
 
-主题模型是一种重要的机器学习模型，在文档处理里面由于能够抽取出隐藏在文档里的主题信息而广泛使用。
-LDA是主题模型中最基本也是最经典的模型，他将PLSA贝叶斯化，使得模型更加灵活。LDA是一种聚类，是一种降维，是一种矩阵分解，
-本文方法的创新之处在于，将DNA序列按照
+\section{性能分析}
+这一节中，我们用模拟数据和真实数据来评估我们方法的性能。我们将我们的方法和现有的MetaCluster3.0/5.0，AbundanceBin和MCluster进行了对比，MCluster是最近的元基因组聚类的非监督方法。
 
+\section{数据集}
+\subsection{模拟数据}
+数据由MetaSim\cite{richter2008metasim} (一个基因组和元基因组序列模拟软件)生成。我们从物种丰度各异的物种中采样出元基因组序列数据。
 
-由于对于稀疏图这一种比较特殊的图数据，图中绝大多数的顶点之间不可达，如果我们仍然使用在第4章中提出的\pphop 索引算法，我们需要添加的人工代理中心点将会非常多，致使最后的索引大小较大。在本章中，我们首先介绍一种针对稀疏图的基于最小交集归一化\hop 索引方法，详细介绍它的构建算法并针对该算法进行实验，证明该算法在保证了我们前面定义的隐私保护目标的前提下，相比原始的\hop 的索引大小的变化，以及查询时间的改变。
+由于MetaCluster3.0 在长序列上表现良好，我们模拟了不同物种丰度和物种个数(从2到10)的长序列数据, 16个物种表示为D1到D16，我们同样生成了
+相对而言高丰度的序列(50k和500k序列)，因为AbundanceBin是专门处理高丰度的序列。10个数据集分别称为S1到S10。这些数据集的细节列在表
+\ref{tab:1}和表\ref{tab:2} 中。
+\begin{table}[htbp]
+    \centering
+    \caption{低丰度的模拟数据(序列平均长度1000bp).}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    D1    & 5k  & 2     & 1:1   \\
+    \hline
+    D2    & 5k  & 2     & 1:2  \\
+    \hline
+    D3    & 5k  & 2     & 1:4   \\
+    \hline
+    D4    & 5k  & 2     & 1:6   \\
+    \hline
+    D5    & 5k  & 2     & 1:8   \\
+    \hline
+    D6    & 5k  & 2     & 1:10  \\
+    \hline
+    D7    & 5k  & 2     & 1:12   \\
+    \hline
+    D8    & 5k  & 3     & 1:1:1  \\
+    \hline
+    D9    & 5k  & 3     & 1:3:9  \\
+    \hline
+    D10   & 5k  & 4     & 1:3:3:9  \\
+    \hline
+    D11   & 5k  & 5     & 1:1:1:1:1  \\
+    \hline
+    D12   & 5k  & 5     & 1:1:3:3:9  \\
+    \hline
+    D13   & 5k  & 10    & 1:1:1:1:1:1:1:1:1:1  \\
+    \hline
+    D14   & 50k  & 3     & 1:3:9  \\
+    \hline
+    D15   & 50k  & 4     & 1:3:3:9  \\
+    \hline
+    D16   & 50k  & 5     & 1:1:3:3:9  \\
+    \hline
+    \end{tabular}
+    \label{tab:1}
+\end{table}
 
-\section{\muihop 索引算法}
+\begin{table}[htbp]
+    \centering
+    \caption{相对高丰度的模拟数据(序列平均长度1000bp).}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    S1    & 50k  & 2     & 1:1   \\
+    \hline
+    S2    & 50k  & 3     & 1:1:1  \\
+    \hline
+    S3    & 50k  &  3     & 1:3:9   \\
+    \hline
+    S4    & 50k  &  5     & 1:1:3:3:9   \\
+    \hline
+    S5    & 50k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    S6    & 500k  &  2     & 1:1   \\
+    \hline
+    S7    & 500k  &  3     & 1:1:1  \\
+    \hline
+    S8    & 500k  & 3     & 1:3:9   \\
+    \hline
+    S9    & 500k  &  5     & 1:1:3:3:9   \\
+    \hline
+    S10   & 500k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    \end{tabular}
+    \label{tab:2}
+\end{table}
 
-在本节中，我们首先给出\muihop 索引算法的定义：
-\begin{Definition}
-\label{def:muihop}
-    %
-    一个图$G=(V(\g)$，$E(\g))$的最小交集归一化\hop $($Minimum Unified Intersection \hop，\muihop $)$就像是定义$~\ref{def:newlabel}$中定义的\hop 索引结构，我们将其表示为$\lin$ 和 $\lout$，并且它具有以下的性质：
-    %
-    \begin{itemize}
-        %
-        \item $\forall u, v \in V(G)$,如果$u \leadsto v$，那么$\lin(v) \cap \lout(u)$ $=$ \{$(w, true)$\}, 否则如果$u \not \leadsto v$，那么$\lin(v) \cap \lout(u)$ $=$ \{$(w, false)$\}；
-        %
-        %
-        \item $\sum_{u \in V(G)} (|\lin(u)| + |\lout(u)|)$最小化。
-        %
-    \end{itemize}
-    %
-    %
-\end{Definition}
+现在真实数据集中包含了数以百万的短序列是非常常见的，因此我们模拟了两个数据集分别有一百万条长为75bp的序列，分别包含20和50个物种，称为数据集A 和B。数据集A中的20个物种中，相对测序深度为1 3 5 10的物种数各有5个物种。数据集B中的50个物种，有6个物种测序深度为6,5个物种相对测序深度为8,5个物种测序深度为10，剩下的物种测序深度为1，A和B的细节在表\ref{tab:3}中。
+\begin{table}[htbp]
+    \centering
+    \caption{Simulated datasets of very high abundance~(read length is 75bp on average).}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    A    & 1million  & 20     & 1 X 5:3 X 5:5 X 5:10 X 5   \\
+    \hline
+    B    & 1million  & 50     & 1 X 34:6 X 6:8 X 5:10 X 5   \\
+    \hline
+    \end{tabular}
+    \label{tab:3}
+\end{table}
 
-从上面定义~\ref{def:muihop}可以看出，在基于\muihop 索引上的可达性查询将是一个简单的集合的交集运算，同时，交集的结果总是只有一个元素。对于给定一个查询$\reach($$u,v$$)$，如果$\lin(v) \cap \lout(u)$ $=$ $(w, true)$表明顶点$u$可以到达顶点$v$，否则如果$\lin(v) \cap \lout(u)$ $=$ $(w, false)$ 表明顶点$u$ 不可以到达顶点$v$。
+考虑到 MetaCluster 5.0只能处理极高丰度的短序列，我们也生成了5个数据集，分别有3000k个长为128bp的短序列，并且将我们的方法与MetaCluster5.0 进行比较。这些数据集分别称为C D E F G，具体细节在\ref{tab:4}中。
 
+\begin{table}[htbp]
+    \centering {
+    \caption{极高丰度模拟数据~(序列平均长度是128bp).}\label{tab:4}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    C    & 3000k   &  2     & 1:1   \\
+    \hline
+    D    & 3000k  &  3     & 1:1:1  \\
+    \hline
+    E    & 3000k  & 3     & 1:3:9   \\
+    \hline
+    F    & 3000k  &  5     & 1:1:3:3:9   \\
+    \hline
+    G   & 3000k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    \end{tabular}}
+\end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[height=4cm ,width=10cm]{./example/mui2hop.eps}
-\caption{基于图~\ref{fig:graph}中的图数据的\muihop 索引}
-\label{fig:mui2hop}
+\subsection{真实数据集}
+由于NCBI的Acid Mine Drainage元基因组数据已经被大量研究，我们也采用该数据集来评价我们的方法。这个真实数据集包含2534个重叠群(contig), 序列长度为
+5000bp，这些重叠群是由103462个高质量的修整过的序列组装而成。数据集包括5个已知的物种：Leptospirillum sp.Group II, Leptospirillum sp.Group III, Ferroplasma acid armanus Type I, Ferroplasma sp.Type II
+and Thermoplasmatales archaeon Gpl 以及一些来自未知物种的序列。五个物种分别属于两个超界和三个属，分类图如图~\ref{fig:4}所示。序列有2534 个contig。 众所周知
+对于未知物种信息的序列，我们评价聚类算法的性能比较困难，因此我们删除其中没有物种注释的序列，并得到2424个contigs，表示为数据集R1。
+\begin{figure}[h!]
+  \centerline{\includegraphics[width=10cm]{./example/RealDataset}}
+  %[width=16cm]
+  \caption{The taxonomy of species in R1.}
+  \label{fig:4}
 \end{figure}
+\subsection{评价标准}
+为了评价聚类结果，我们考虑三种度量方法，Precision(Pr)，Sensitivity(Se)以及F1-measure(F1). 假定有一个元基因组数据集包含了N个物种，并最终归到M个类中，Rij表示第i个Cluster中包含第j个物种的序列的数量。
+
+Precision和Sensitivity的定义如下所示
+\begin{equation}\label{eq5}
+Pr=\frac{\sum_{i=1}^{M}\max_{j}(R_{ij})}{\sum_{i=1}^{M}\sum_{j=1}^{N}R_{ij}},
+\end{equation}
+\begin{equation}\label{eq6}
+\begin{split}
+Se=\frac{\sum_{j=1}^{N}\max_{i}(R_{ij})}{\sum_{i=1}^{M}\sum_{j=1}^{N}R_{ij}+\text{number of unclassified reads}}.
+%number\;of\;unclassified\;reads}.
+\end{split}
+\end{equation}
 
 
-\begin{Example}
-我们在此仍然使用图$~\ref{fig:graph}$中的\hop 基础索引作为我们讨论的例子，基于图$~\ref{fig:graph}$中的\hop 索引，它的一种可能的\muihop 见图$ ~\ref{fig:mui2hop}$，在该\muihop 索引中，$\maxintr$的值为$1$。同时我们在图中使用粗体对真实的中心点标记，对于非粗体的点表示我们算法添加的代理中心点。很明显我们可以看出$\lin$$(4)$$\cap$$\lout$$(0) =$ \{{\bf 0}\}，则表明节点$0$可以到达节点$4$，然而由于$\lin$$(4)$$\cap$$\lout$$(5) = \{12\}$，表示节点$5$不可以到达节点$4$。
-\end{Example}
-
-\subsection{\muihop 算法分析}
-从定义~\ref{def:muihop}中可以看出，为了构建\muihop 需要两种不同类型的人工代理中心点。(1)使用真实的中心点去覆盖传递闭包集合中的所有可达的点对之间的信息；(2)使用虚假的代理中心点去覆盖那些$u \not\leadsto v$。从上面的叙述中我们可以看出通过添加真实的中心点去覆盖所有的$u \leadsto v$的问题和添加虚假的代理中心点去覆盖$u \not\leadsto v$是相同的问题。所以对于如果构建一个图的\muihop 索引，我们可以将其归纳为一个问题：如何通过添加最少的真实(虚假)中心点使得其可以覆盖所有的$u \leadsto v$($u \not\leadsto v$)，且$|\lin(v) \cap \lout(u)|$~$=$~$1$。
-
-\begin{Lemma}
-构建一个图$\g$的\muihop 索引是一个NP-hard问题。
-\end{Lemma}
-
-构建\muihop 算法的难度可以通过最小集合覆盖问题(Minimum Set Cover problem, \MSC)转变而来。我们下面证明构建一个图的\muihop 和\MSC 是一个非常相近的问题。考虑图$\g$的所有可达的点对，我们使用一个二分图$B = (V, L, R, E)$，$L(B) = R(B) = V(G)$来表示图$\g$的传递闭包信息$T(\g)$。$L(B)$ 和 $R(B)$ 分别表示$\lin$s和 $\lout$s，对于所有的点$\forall u \in R(B)$, $v \in L(B)$，如果顶点$u$可以到达顶点$v$($ u \leadsto v$)，那么存在$(u, v)\in E(B)$ 。
-
-我们考虑\MSC 的一个实例${\cal U} = E(B)$，其中包含了图$\g$的所有传递闭包信息。我们使用${\cal S}$表示${\cal U}$的一个子集，并且${\cal S}$ $=$ $\{S | S = E(K)$，$K$是二分图$B$的一个同构子图，并且 $\forall u \in R(K), v \in L(K), (u, v) \in E(B)\}$。那也就意味着子图$K$包含了整个 $T(\g)$的所有信息，并且覆盖了所有$E(K)$。进一步，我们需要利用完全二分图来覆盖$E(B)$中的信息，并且确保$E(B)$中的每一条边被覆盖到一次。对于集合${\cal S}$中的每一个$S$($S \in {\cal S}$)，它的权重$weight(S)$ $=$$|L(K)| + |R(K)|$ $=$ $|V(K)|$，因为$E(K)$的信息是由通过向每一个$L(K)$的$\lin$和$R(K)$的$\lout$中添加一个中心点来覆盖的。
-
-\MSC 问题的目标是找到一个集合${\cal S}' \subset {\cal S}$使得：(1)${\cal U}$ 能够被集合 ${\cal S'}$完全覆盖，并且相应的集合$E(B)$中的每一条边都被覆盖。为了得到最小覆盖，集合$E(B)$中的每一条边都仅被覆盖一次，也就意味着如果顶点$u$可以到达顶点$v$($u \leadsto v$)，那么$|\lout(u) \cap \lin(v)|$ $=$ $1$。(2) 同时希望$\sum_{S \in {\cal S}'}weight(S)$能够最小化，也就意味着$\sum_{u\in V(G)}(|\lin(u)| + |\lout(u)|)$被最小化。很明显，找到一个这样的集合${\cal S}'$ 和找到一个最小的\muihop 索引完全一样。由于我们知道\MSC 问题是一个NP-hard问题，所以构建一个\muihop 是一个NP-hard问题。
-
-我们对上面的构建一个图的\muihop 索引问题使用一个传统的\MSC 贪心算法来解决，该贪心算法与最优解之间的近似率为(1+1/2+$\cdots$+$1/|{\cal U}|$)OPT。首先，我们定义一个 ${\cal U}'$ 来表示集合${\cal U}$中未被覆盖的元素，也就是${\cal U}'$ $=$ ${\cal U}$ $=$ $E(B)$。集合${\cal S}$中带有最大的$\frac{|S \cap {\cal U}'|}{w(S)}$值的集合$S$通过不断的迭代从集合${\cal S}$中移除来覆盖${\cal U}'$ ，并从${\cal U}'$ 中将已覆盖到元素移除。当${\cal U}'$ 中所有的元素都已经被覆盖到，那么算法终止。如何找到这样的一个集合$S$等同于从$B$中找到这样一个最大完全二分子图$K$，因为：
-\begin{itemize}
-    %
-    \item [(1)] $\forall u \in R(K), v \in L(K), (u, v) \in E(B)$；
-    %
-    \item [(2)] $\frac{|S~\cap~~{\cal U}'|}{weight(S)}$ $=$ $\frac{|E(K) \cap
-        {\cal U}'|}{|V(K)|}$ $=$ $\frac{|E(K)|}{|V(K)|}$ 是最大化的。
-    %
-\end{itemize}
-其中根据定义$S$ = $E(K)$，我们可以得到$|S \cap {\cal U}'|$ = $|E(K) \cap {\cal U}'|$，$|E(K) \cap {\cal U}'|$ = $|E(K)|$。问题就转化为寻找密集子图问题，由于\MSC 构建问题需要利用到最大完全二分图来覆盖$E(B)$，这就是寻找密集子图问题。已经证明，需要一个二分图的最大完全二分图也是一个NP-hard问题，所以我们的\muihop 索引也是一个NP-hard问题。
-
-\subsection{基于启发式方法的\muihop 构建算法}
-
-
-
-在本节中，我们提出一个贪心算法来寻找最大完全二分子图问题，我们将该算法和基于\MSC 的\muihop 的构建算法合并在一起得到我们的基于启发式方法的\muihop 构建算法，见算法~\ref{algo:muis}。算法的输入为一个图数据$\g$，输出为计算出的\muihop 索引($\lin$和$\lout$)。在算法的第1-2行中，我们首先将$\lin$s 和 $\lout$s 设置为空集，同时生成图$\g$的传递闭包集合$T(\g)$以及它的补集$T(\g)^-$。在算法的第3-4行中，分别利用上面计算出的$T(\g)$，$T(\g)^-$得到他们的二分图集合$B$和$B^-$。并且通过调用\AddSurNode\ 程序在生成的$B$($B^-$)基础上对$\lin$和$\lout$中添加真实(虚假)的的中心点，并将其标识位$\flag$设置为true(false)。在第5行中，将生成的$\lin$s 和 $\lout$s返回。
-
-算法~\ref{algo:muis}中的第6-9行\AddSurNode 是\MSC 问题的一个经典贪心算法的二分图描述。对于每一次迭代，如果$E(B)$中的信息还没有被完全覆盖到($E(B) \not= \emptyset$)，则从$B$里面通过\GreedyFndMaxBiK 算法选择一个最大的完全二分图$K$。同时生成一个新的中心点，并根据其$\flag$设置相应的标志信息，然后根据$(u,v) \in E(K)$的信息，将该中心点加入到$\lin(v)$和$\lout(u)$中。在第9行中，将已经被覆盖到的$E(K)$从$E(B)$中移除。
-
-算法~\ref{algo:muis}中的第10-14行，\GreedyFndMaxBiK 算法用来寻找$B$的一个最大完全二分子图$K$。\GreedyFndMaxBiK 算法首先初始化一个空的图$K$。然后算法如果能够找到一个点的集合$T$，使得对于$T$中的每一个点$u \in T$，可以和$K$中的点构成一个完全二分子图。 在算法的第12行中，从$T$中选择一个具有最大的度的点作为候选点$u_{\max}$，并将$u_{\max}$加入到$K$中，使其构成为一个更大的完全二分图。算法\GreedyFndMaxBiK 在再也找不到这样一个集合$T$时结束，并将当前的最大完全二分图$K$返回。这样返回的$K$是当前最大的一个完全二分图。使用\GreedyFndMaxBiK 的一个好处在于它的效率是最接近最优的：从$B$中寻找一个最大完全二分子图等同于从$B^-$ 中寻找一个最大独立子集$M$，其中$B^-$是$B$的一个补图。众所周知，这样的一个贪心算法，找出的最大独立子集的近似度在$1/(1+\Delta)$。
-
-
-\begin{algorithm}
- \caption{\muis\ ($\g$)}
-\label{algo:muis} {
- \begin{algorithmic}[1]
- \Statex {\bf Input:} 一个图数据$\g =(V(\g),E(\g))$
- \Statex {\bf Output:} 图$\g$的\muihop\:$\lin$ 和 $\lout$
-
- \State 对于图中所有的顶点$\forall u \in V(G)$，$\lin(u) = \lout(u) = \emptyset$
- \State 生成图$\g$的$T(\g)$ 和 $T(\g)^-$
- \State 生成$T(\g)$的$B$，并调用子程序\AddSurNode\ ($B$, $\lin$, $\lout$, $true$)
- \State 生成$T(\g)^-$的$B^-$，并调用子程序\AddSurNode\ ($B^-$,$\lin$,$\lout$,$false$)
- \State {\bf return } $\lin$ 和 $\lout$
- \Statex
-
- \Statex {\bf Procedure~\ref{algo:muis}.1} \AddSurNode\ ($B$, $\lin$, $\lout$, $\flag$)
- \State {\bf while} $E(B) \not= \emptyset$ \quad \quad //边还没有被覆盖完
- \State \quad $K$ $\leftarrow$ \GreedyFndMaxBiK\ ($B$)
- \State \quad $\forall (u,v) \in E(K)$, 加入一个新的点 $w$到$\lin(v)$和$lout(u)$中
- \Statex \quad \quad $\lin(v) \leftarrow \lin(v) \cup \{(w, \flag)\}$，
- \Statex \quad \quad $\lout(u) \leftarrow \lout(u) \cup \{(w, \flag)\}$
- \State \quad $E(B) \leftarrow E(B)/E(K)$ \quad \quad 从$B$中移除$K$中的边
- \Statex
-
- \Statex {\bf Procedure~\ref{algo:muis}.2} \GreedyFndMaxBiK\ ($B$)
- \State 初始化一个空的最大完全二分图$K$
- \State {\bf while }$T \not= \emptyset$，$T$=$\{ u | \{u\}$$\cup$$V(K)$ 在 $B$中构成一个最大完全二分图$\}$
- \State \quad 设置$u_{\max} = \arg\max_{u \in T}(Deg(u))$
- \State \quad $V(K) \leftarrow V(K) \cup \{u_{\max}\}$
- \State {\bf return } $K$
-
-
-  \end{algorithmic} }
-\end{algorithm}
-
-\section{基于\muihop 的可达性查询的隐私保护算法}
-\label{sec:pp2hopquery}
-
-
-在本节中，我们定义了\muihop 的加密算法以及如何基于加密的\muihop 进行可达性查询的处理，最后我们对我们的隐私保护的可达性查询算法进行分析。
-
-\begin{Definition}\label{def:ppmuihop}
-    %
-    一个图$\g$的隐私保护\muihop $(\ppmuihop)$就是图$\g$的 \muihop 索引方法的一个加密的索引，我们将其表示为$\line$ 和 $\loute$，对于\muihop 中的每一个中心点$($w$, $\flag  $)$，我们通过加密算法将其变换为$($$h_{s_1}(w)$, $\enc(\flag)$$)$，其中$h_{s_1}$是一个单向哈希函数，$\enc$是一个随机加密算法。
-    %
-\end{Definition}
-
-{\bf 隐私保护的可达性查询。}基于以上的\ppmuihop 索引，可达性查询算法可以分为以下三个步骤：(1)客户端将$\reach$$(u, v$$)$可达性查询通过哈希方法，使其转化为$\reach^e$$(u_e, v_e$$)$，其中$u_e = h_{s_2}(u)$， $v_e = h_{s_2}(v)$，并同时将哈希后的可达性查询提交至服务端\SP。(2)服务端\SP 检索出$\line(v_e)$和$\loute(u_e)$并进行交集运算$\line(v_e) \cap \loute(u_e)$，交集的结果会得到一个加密的二元组($w_e$, $\flag_e$)，\SP 从二元组中提取出$\flag_e$，然后将该$\flag_e$返回给查询的客户端；(3) 客户端通过使用从数据拥有者获得的授权密钥对$\flag_e$进行解密，得到最终的查询结果，如果解密结果为$true$，则说明$ u \leadsto v$，否则说明$u \not\leadsto v$。
-
-
-{\bf \ppmuihop 隐私保护分析。} 我们接下来，对本章中针对稀疏图数据提出的\ppmuihop 安全性进行分析，我们可以证明，我们的索引和查询方法在~\ref{sec:def}节中定义的攻击模型情况下是完全安全的。
-
-\begin{Lemma}
-\label{prop:muipphop1}
-\ppmuihop 索引及其查询算法可以有效的保护查询顶点之间的可达性信息$\reach^e(u_e, v_e)$。
-\end{Lemma}
-
-首先对于($w_e$, $\flag_e$) $\in$ $\line(u)$ (或者 $\loute(u)$)，攻击者\SP 无法推测一个中心点$w_e$是否为真实的中心点或者是一个虚假的中心点。其主要原因在于：(1)对于图中的顶点$u \in V(\g)$和所有\ppmuihop 索引中的中心点$w$，我们是通过使用带有不同参数的哈希方法进行哈希，进而\SP 无法确定这两类顶点之间的关系，也就无法确定一个点是否为原图数据中的一个顶点。(2)$\flag_e$是通过使用$\enc$进行了加密，通常情况下我们可以使用AES加密算法对其进行加密，由于AES加密算法，\SP 无法对其进行破解，所以\SP 无法获取到$\flag_e$对应的原文信息。综上两点所述，攻击者既无法破解中心点的哈希算法也无法破解标志位的AES加密算法，所以它无法获取查询结果的任何信息。
-
-基于上面的分析，同时，对于一个给定的查询$\reach^e$$(u_e,v_e$$)$，攻击者\SP 无法对$\line(v_e)$和 $\loute(u_e)$进行破解，由于对于任何的查询$\line(v_e) \cap \loute(u_e)|$的结果始终为只包含有一个二元组，它的大小始终为1。同时由于($w_e$, $\flag_e$)是被进行了加密，所以在查询处理期间，攻击者\SP 不能获取到查询的任何信息。所以查询的节点之间的可达性信息得到了保护。
-
-\begin{Lemma}
-\label{prop:muipphop2}
-\ppmuihop 索引及其查询算法可以有效的保护原始图数据的结构信息。
-\end{Lemma}
-
-我们可以使用反证法来证明引理~\ref{prop:muipphop2}的正确性。我们假设攻击者\SP 可以推测出图中的一条边$(u,v)$的存在性，那么攻击者\SP 必然可以破解至少一个查询$\reach^e$$(u_e, v_e$$)$，这个和引理~\ref{prop:muipphop1}中\SP 不能破解任何\ppmuihop 索引相违背，所以 \ppmuihop 索引及其查询算法可以有效的保护原始图数据的结构信息。
-
+上述 "unclassified reads" 表示聚类算法聚类结果中未进行归类的序列。F1-measaure定义如下所示：
+\begin{equation}\label{eq7}
+F1=\frac{2\ast Pr \ast Se}{Pr+Se}.
+\end{equation}
 
 \section{实验结果}
-在本节中，我们通过实验对\ppmuihop 中算法的效果进行实验室验证。
-
-\begin{table}[t]
-%\vspace{-6ex}
-
-%\begin{minipage}{0.5\linewidth}
+\subsection{主题个数的影响}
+概率主题模型是一种非监督技术。模型中的主题信息是隐藏的，所以我们需要为每个数据集设定主题个数。此处，我们检测LDA模型中主题个数如何影响TM-MCluster 的聚类性能。我们采用D12数据集，序列来自5个物种，并且修改主题个数从2到100。图\ref{fig:5}的结果显示，当主题个数是20的时候，我们的方法可以
+取得较好的聚类效果。当主题个数为2时，聚类结果差强人意。显然，太少的主题个数可能会导致信息的丢失，太多的主题个数也许会引入噪音，也会产生负面的影响。
+\begin{figure}[h!]
+%\centering
+    \includegraphics[width=12cm]{./example/TopicAnalysis}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{The effect of topic number on binning performance of \emph{TM-MCluster}}
+            \label{fig:5}
+\end{figure}
+\subsection{模拟数据集实验结果}
+首先，我们将我们的方法与MetaCluster3.0 和MCluster在4个均匀分布的数据集上进行比较，数据集D1 D8 D11 D13分别包含2 3 5 10个物种。结果显示在表\ref{tab:3} 中。
+\begin{table}[htbp]
 \centering
-\caption{真实数据和合成数据集信息}
+    \caption{相同丰度比的模拟数据集D1 D8 D11 D12上的聚类结果。每个黑体值表示某个数据集的最优结果。}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{数据集}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    D1	& \textbf{.9989}&	.9628&	.9805&	.9877&	.9877&	.9877&	.9882&	\textbf{.9882}&	\textbf{.9882}\\
+    \hline
+    D8	& 	.7432&	.9218&	.8229&	.9158&	.9158&	.9158&	\textbf{.9586}&	\textbf{.9586}&	\textbf{.9586}\\
+    \hline
+    D11	& 	.8215&	.8766&	0.8481&	\textbf{.9002}&	\textbf{.9002}&	\textbf{.9002}&	.8394&	.8394&	.8394\\
+    \hline
+    D13	& 	.4335&	\textbf{.8732}&	.5794&	.706&	.6894&	.6976	&\textbf{.7574}&	.7732&	\textbf{.7652}\\
+    \hline
+    \end{tabular}
+    \label{tab:3}
+\end{table}
+从表\ref{tab:3}中可以看出，我们的方法在三个数据集上取得最高的F1值，在两个数据集上取得最高的precision和sensitivity。
 
-\begin{tabular}{|c|c|c|c|c|c|}
-\hline
-$\g$ & $|V(\g)|$  & $|E(\g)|$ & $|V(\g)|/|E(\g)|$ & $|V$(\DAG$(\g)$)$|$ &  $|E$(\DAG$(\g)|$) \\
-\hline
-\SYN-1 & 3,073 & 37,615 & 0.08 & 3,073 & 37,615 \\
-\hline
-\SYN-2 & 5,651 & 15,968 & 0.35 & 5,651 & 15,968 \\
-\hline
-\SYN-3 & 4,880 & 27,946 & 0.17 & 4,880 & 27,946 \\
-\hline
-real-1 & 6,927 & 11,850 & 0.58 & 6,927 & 11,850 \\
-\hline
-real-2 & 34,546 & 421,578 & 0.08 & 21,608 & 281,030  \\
-\hline
-real-3 & 62,586 & 147,892 & 0.42 & 48,438 & 96,976\\
-\hline
-real-4 & 75,879 & 508,837 & 0.15 & 42,176 & 61,995\\
-\hline
-real-5& 82,140 & 549,202 & 0.15 & 53,599 & 200,101\\
-\hline
-real-6 & 82,168 & 948,464 & 0.09 & 10,559 & 28,331 \\
-\hline
-real-7 & 81,306 & 2,420,766 & 0.03 & 12,248 & 95,659\\
-\hline
-\end{tabular}
-\label{table:dataset}
-%\end{minipage}
+我们同样check我们的方法在12个非均匀分布的数据集上的性能，结果显示在表\ref{tab:4}.在12个测试数据集中，我们的方法分别在10，6和5个数据集上取得了最高的F1 Precision以及Sensitivity。MCluster在三个数据集上取得最好的F1值和sensitivity, 而MetaCluster3.0分别在7个和5个数据集上分别取得最高的precision 和Sensitivity，但是F1值却差强人意。值得注意的是，我们的方法似乎在分布不均匀的数据集上表现更加优异。
+\begin{table}[htbp]
+\centering
+    \caption{Results on 12 unevenly-distributed datasets. Each bold value indicates the best result on a certain dataset.}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+
+  %  \hline
+  %  D1&\textbf{.9989}&.9628	&.9805&	.9877&	.9877	&.9877	&.9882	&\textbf{.9882}	&\textbf{.9882}\\
+    \hline
+    D2&		\textbf{.9997}&	.9648&	.9820&	.9888&	\textbf{.9888}&	\textbf{.9888}&	.9860&	.9860&	.9860\\
+    \hline
+    D3&		\textbf{.9998}&	.9596&	.9793&	.9950&	\textbf{.9950}&	\textbf{.9950}&	.9948&	.9948&	.9948\\
+    \hline
+    D4&\textbf{1.0000}	&.9612	&.9802&	.9942&	.9942&	.9942&	.9946&	\textbf{.9946}&	\textbf{.9946}\\
+    \hline
+    D5		&\textbf{1.0000}&	.9608&	.9800&	.9950&	.9950&	.9950&	.9954&	\textbf{.9954}	&\textbf{.9954}\\
+    \hline
+    D6	&	\textbf{1.0000}&	.9610&	.9801&	.9966&	\textbf{.9966}&	\textbf{.9966}&	.9966&	\textbf{.9966}	&\textbf{.9966}\\
+    \hline
+    D7		&\textbf{1.0000}&	.9618&	.9805&	.9980&	.9980&	.9980&	.9988&	\textbf{.9988}&	\textbf{.9988}\\
+    \hline
+    D9	&.7277&	\textbf{.9628}&	.8289&	.8974&	.8974&	.8974&	\textbf{.9320}&	.9320&	\textbf{.9320}\\
+    \hline
+    D10	&	.7345&	.9096&	.8127&	.8852&	.8852&	.8852&	\textbf{.9156}	&\textbf{.9156}&	\textbf{.9156}\\
+    \hline
+    D12		&	.7489&	\textbf{.9066}&	.8202&	.8524&	.8524&	.8524&	\textbf{.8930}&	.8930&	\textbf{.8930}\\
+    \hline
+    D14&	.7275&	\textbf{.9539}&	.8255&	.8863&	.8860&	.8863&	\textbf{.9420}&	.9420&	\textbf{.9420}\\
+    \hline
+    D15	&	.7472&	\textbf{.9202}&	.8247&	.8764&	.8764&	.8765&	\textbf{.9070}&	.9070&	\textbf{.9070}\\
+    \hline
+    D16	&	.6792&	\textbf{.9106}&	.778&	.8546&	.8546&	.8546&	\textbf{.8875}&	.8875&	\textbf{.8875}\\
+    \hline
+    \end{tabular}
+    \label{tab:4}
+\end{table}
+我们进一步查看我们方法在相对高丰度数据集上的性能。由于AbundanceBin只能处理高丰度数据集，我们将我们的方法与AbundanceBin和MCluster进行比较，结果如表\ref{tab:5}所示。在10个测试数据集上，我们的方法分别在9 6 和8个数据集上取得最高的F1值，Sensitivity以及Precision。MCluster只取得了一个最高的F1值和2个最高的precision，AbundanceBin获得最高的4个Sensitivity。综合来看，在较高丰度数据集上，我们方法性能优于其他方法。
+\begin{table}[htbp]
+    \centering
+    \caption{Results of on high-abundance datasets. Each bold value indicates the best result on a certain dataset.}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AbundanceBin}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    S1&.7258	&.9740&	.8317&	.9875	&.9875&	.9875&	\textbf{.9882}&	\textbf{.9882}&	\textbf{.9882}\\
+    \hline
+    S2&.4047&	.9405&	.5600&	.9154	&.9154&	.9154&	\textbf{.9519}&	\textbf{.9519}&	\textbf{.9519}\\
+    \hline
+    S3&.5866	&.7528	&.6594&	.8873&	.8873&	.8873&\textbf{	.9361}&\textbf{	.9361}&\textbf{	.9361}\\
+    \hline
+    S4&.4106	&\textbf{.9441}&	.5723&	.8554&	.8554&	.8554&\textbf{	.8921}&.8921&\textbf{	.8921}\\
+    \hline
+    S5&.1748	&\textbf{.9871}&	.2970&	.7361&	.7241&	.7301&\textbf{	.7578}&.7546&\textbf{	.7562}\\
+    \hline
+    S6&.7266&	\textbf{.9999}&	.8416&\textbf{	.9873}&.9873&\textbf{	.9873}&	.9869&	.9869&	.9869\\
+    \hline
+    S7&.3991&	\textbf{.9999}&	.5705&	.9173&	.9173&	.9173&	\textbf{.9545}&.9545&\textbf{	.9545}\\
+    \hline
+    S8&.8591&	.8591&	.8591&	.8868&	.8868&	.8868&\textbf{	.9393}&\textbf{	.9393}&\textbf{	.9393}\\
+    \hline
+    S9&.6457&	.6476&	.6466&	.8581&	.8581&	.8581&\textbf{	.8880}&\textbf{	.8880}&\textbf{	.8880}\\
+    \hline
+    S10&.1888&	.7223&	.2993&\textbf{	.7253}&	.7161&	.7207&	.7196&	\textbf{.7317}&	\textbf{.7256}\\
+
+    \hline
+    \end{tabular}
+    \label{tab:5}
+\end{table}
+现实中，越来越多的元基因组数据都是短序列(大概100bp)，因此我们通过处理短序列数据来评价我们的方法。由于MetaCluster 3.0处理短序列能力有限，我们只列出AbundanceBin MCluster以及我们的方法在数据集A和B(短序列)的性能。结果如表\ref{tab:6}所示和AbundanceBin以及MCluster相比，TM-MCluster 取得了最高的F1 值以及precision，这和我们方法在长序列上的结果是不谋而合的。
+\begin{table}[htbp]
+    \centering
+    \caption{Binning performance of AbundanceBin, MCluster and TM-MCluster on short reads (75bp average) datasets: Dataset-A and Dataset-B. The bold values are the best precision, sensitivity and F1-score.}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AbundanceBin}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &Pr&Se&F1&Pr&Se&F1&Pr&Se&F1    \\
+    \hline
+    A&.2270&.9878&.3692&	.2250	&\textbf{1.0000}	&.3674&	\textbf{.3165}&.6471&\textbf{.4251}\\
+    \hline
+    B&.0757&.9878&.1407& .0744	&\textbf{1.0000}&	.1384&\textbf{.1338}&.5836&\textbf{.2177}\\
+    \hline
+    \end{tabular}
+    \label{tab:6}
+\end{table}
+
+
+由于对于大元基因组数据进行聚类耗时费内存，时间和空间效率也是一项重要的评价指标。此处，我们列出AbundanceBin MCluster以及我们的方法在数据集A和B上的时间和空间消耗，结果显示在表\ref{tab:7}中。我们可以看出AbundanceBin花费最少的内存，而MCluster运行最快。由于训练LDA是耗时的，TM-MCluster 花费最多的时间，此外空间消耗也较大。
+\begin{table}[htbp]
+    \centering
+    \caption{Memory and time costs of AbundanceBin, MCluster and TM-MCluster on short reads (75bp average) datasets: Dataset-A and Dataset-B.}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{2}{|c|}{\textbf{AbundanceBin}}&\multicolumn{2}{|c|}{\textbf{MCluster}}&\multicolumn{2}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-7}
+    &Memory&Time&Memory&Time&Memory&Time    \\
+    \hline
+    A&3.07GB&2.15h&3.20GB&1.36h& 4.12GB&3.11h\\
+    \hline
+    B&3.20GB&3.20h&3.46GB&2.38h&4.10GB&3.31h\\
+    \hline
+    \end{tabular}
+    \label{tab:7}
+\end{table}
+
+最后，我们还比较了TM-MCluster以及MetaCluster 5.0在数据集C D E F G上的性能，结果列在表\ref{tab:8}上。结果表明，TM-MCluster在4个数据集上取得明显高于MetaCluster5.0的Sensitivity，这主要是由于MetaCluster 5.0在聚类时，将低丰度物种的序列都归到小的类里，最后再丢弃。不过，MetaCluster5.0 在五个数据集上都取得较高的precision。由于F-measure是Sensitivity和precision上的权衡，我们的方法依然在4个数据集上取得了较高的F-measure.
+此外，MetaCluster 5.0在数据集D差强人意，而这个数据碰巧有最大数量的物种数，并且diverse的丰度比。总而言之，在短序列的高丰度数据集上，
+我们的方法取得优于MetaCluster 5.0的性能。
+\begin{table}[htbp]
+    \centering {
+    \caption{Performance comparison: TM-MCluster $vs$. MetaCluster 5.0.}\label{tab:8}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 5.0}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-7}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    C&\textbf{.9944}	&.3862&	.5563&	.9793	&\textbf{.9793}&	\textbf{.9793}\\
+    \hline
+    D&\textbf{.9904}&	.4290&	.5986&	.7198	&.\textbf{7198}&	\textbf{.7198}\\
+    \hline
+    E&\textbf{.9770}	&\textbf{.4806}	&\textbf{.6437}&	.6923&	.4645&	.5574\\
+    \hline
+    F&\textbf{.9770}	&.3178&	.4796&	.5801&	\textbf{.4645}&	\textbf{.5159}\\
+    \hline
+    D&\textbf{.8662}	&.0066&	.0131&	.2141&	\textbf{.7988}&	\textbf{.3377}\\
+    \hline
+    \end{tabular}}
 \end{table}
 
 
 
+\subsection{真实数据集实验结果}
+此外，我们还在真实数据集上测试我们方法的性能。从图\ref{tab:4}上，我们知道R1上的序列属于两个超界，三个属以及五个物种。因此我们预先设定AbundanceBin
+MCluster以及我们的方法的聚类个数分别为2，3和5。由于MetaCluster 3.0可以自动决定最终聚类的个数，我们不用为他设定类的个数。对于我们的方法，主题个数设定为100，最终MetaCluster3.0 输出了2个类。上述所有结果都显示在表\ref{tab:9}中。
+\begin{table}[htbp]
+    \centering
+    \caption{Results on the real dataset R1.}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{Methods} & \textbf{$\#$~Cluster}  & \textbf{\emph{Pr}} & \textbf{\emph{Se}} &\textbf{\emph{F1}} \\
+    \hline
+    MetaCluster 3.0   &2 &\textbf{.7328}&.8441&.7845\\
 
-\begin{table}[t]
-%\begin{minipage}{0.5\linewidth}
-\centering
-\caption{\ppmuihop 实验结果}
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-$\g$ & $|$\ppmuihop$|$ & $|T$(\DAG$(\g)$$)|$ & $|V$(\DAG$(\g)$)$|^2$ & 索引构建时间 \\
-\hline
-\SYN-1 & 2.11M & 2.91M & 9.44M & 11s \\
-\hline
-\SYN-2 & 7.30M & 0.29M & 31.93M & 1min25s \\
-\hline
-\SYN-3 & 9.24M & 2.44M & 23.81M & 1min35s \\
-\hline
-real-1 & 1.49M  & 400K & 47.98M & 22s \\
-\hline
-real-2 & 19.13M & 84.25M & 466.90M & 16min43s\\
-\hline
-real-3 & 11.34M & 18.17M & 2.35G & 28min51s\\
-\hline
-real-4 & 12.02M & 348.83M & 1.78G & 28min20s\\
-\hline
-real-5 & 20.33M & 371.90M & 2.87G & 52min38s\\
-\hline
-real-6 & 434.15K & 21.18K & 111.49M & 18s \\
-\hline
-real-7 & 606.77K & 37.78K & 150.01M & 32s \\
-\hline
-\end{tabular}
-\label{table:muihop}
-%\end{minipage}
+    \hline \multirow{4}{*}{AbundanceBin} & 2 &.3952&\textbf{.9934}&.5655\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &.3952&\textbf{.9934}&.5655\\
+    %\cline{2-5}
+    %& 4 &.3932&.9893&.5627\\
+    \cline{2-5}
+    & 5 &.3952&	\textbf{.9893}&	.5648\\
 
+    \hline \multirow{4}{*}{MCluster} & 2 &.7050&.9422&.8066\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &.7054&.9179&.7978\\
+    %\cline{2-5}
+    %& 4 &.6906&.7397&.7143\\
+    \cline{2-5}
+    & 5 &.6972&.6444&.6698\\
+
+    \hline \multirow{4}{*}{TM-MCluster} & 2 &.7186&.9682&\textbf{.8250}\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &\textbf{.7211}&.9645&\textbf{.8252}\\
+    %\cline{2-5}
+    %& 4 &.7793&.8284&.8031\\
+    \cline{2-5}
+    & 5 &\textbf{.7182}&.9130&\textbf{.8040}\\
+    \hline
+
+    \end{tabular}
+    \label{tab:9}
 \end{table}
+尽管MetaCluster 3.0可以自动决定类的个数，他的结果是不准确的，因为R1数据集中有5个物种。对于其他三个方法，AbundanceBin 取得最高的Sensitivity，但是precision是最低的。对于每个预先设定的聚类个数，我们的方法取得最高的F1值。值得一提的是，当预设类个数为数据集实际物种个数5 时，我们的方法取得最高的precision以及F1值，以及仅次于AbundanceBin的Sensitivity。
+
+对于AbundanceBin，MCluster以及我们的方法，当预设的聚类个数从2上升到5时，聚类性能出现下降趋势。这是因为，设定聚类个数分别为2 3 和5 时，会将R1数据集分别往界、属以及类层次聚类。在一个更高层面的，两个类中心的距离一般来说是大于低层次的类中心，因此再较高层次上更容易聚类。
 
 
-\paragraph{实验设置}
-我们在一台普通的PC上进行我们的实验，这台机器配置有一颗3.40GHz的CPU和16GB内存。我们使用7个真实数据集和3个合成数据集来验证我们算法的有效性。7个真实的数据集其中的real-1(ERDOS)来自于\cite{erdos}，real-2 (Cit-HepPh), real-3
-(p2p-Gnutella31), real-4 (soc-Epinions1), real-5 (soc-sign-Slashdot090221), real-6
-(soc-Slashdot0922)和real-7 (ego-Twitter)实验数据集来自于\cite{communication_networks}。关于这些实验数据集的一些特性信息见表~\ref{table:dataset}。对于每一个图，我们首先将其转化为一个有向无环图(DAG)后，再对其建立\ppmuihop 索引。
-
-\paragraph{\ppmuihop 的效果比较}
-在表~\ref{table:muihop}中，我们列出了\ppmuihop 索引的效果数据信息。我们从结果中可以看出，$T(\g)$中真实的中心点的数量约为$|V(\g)|^2$的9\%左右，所以\ppmuihop 索引的大小都几乎是$|V(G)|^2$级别的1/11左右，大小相比于之前\pphop 有了进一步的改善。同时，我们可以看到，针对真实数据集，\ppmuihop 的索引大小要比$|V(G)|^2$ 的4\%左右，在真实的数据集上，我们的算法的效果更加优秀。\ppmuihop 索引的创建时间，最大的在53分钟，这个时间相比图的大小来说也是一个能够接受的范围，但是如果我们使用\cite{chengjf1}的算法，该创建时间会大大缩短。
-
-\paragraph{查询效果}
-我们从这些图中随机选择1000个查询点对。对于所有的查询，其服务端\SP 的查询时间都非常的快，对于合成数据集该查询时间在1.4s左右，对于真实数据集，该查询时间最大在0.18s，这些时间对于一个查询，都是一个可以接受的时间范围。
 
 \section{本章小结}
-在本节中，我们针对稀疏图数据提出了一种特殊的\hop 索引来提供一个可以实现隐私保护的可达性查询索引结构和查询算法。在本节中，我们提出了一种基于最小顶点覆盖的启发式构建\ppmuihop 算法，我们通过实验表明，\ppmuihop 索引对于真实数据集和合成数据集都具有非常好的效果，同时，在本章中，我们也同样对我们提出的\ppmuihop 索引方法进行了隐私保护的证明，证明我们的索引结构可以实现可达性查询时的隐私保护功能。
+在本节中，我们在模拟数据和真实数据集上，对我们的方法进行了全方面的评估，并且与已有的MetaCluster 3.0 5.0 AbundanceBin 以及MCluster进行了比较分析，结果显示我们的方法在多数数据集上聚类性能都优于上述方法。
 
 
 

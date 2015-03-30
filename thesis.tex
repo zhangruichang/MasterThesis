@@ -15,7 +15,15 @@
 \usepackage{pdfpages}
 \usepackage{ccmap}
 %\usepackage[UTF8]{ctexcap}
-
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+ \usepackage{amsmath}
+\usepackage{url}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{ulem}
+\usepackage{comment}
 
 
 \newtheorem{Definition}{定义}[chapter]
@@ -88,7 +96,7 @@
 %\newcommand{\AddSurNode}{$\mathsf{AddSurNode}$}
 
 \begin{document}
-\includepdf{cover.pdf}
+\includepdf{MyCover.pdf}
 
 \begin{CJK*}{GBK}{song}
 
@@ -130,7 +138,7 @@
 %\newpage
 
 \include{introduction}
-\include{relatedwork}
+%\include{relatedwork}
 \include{problemoverview}
 \include{pp2hop}
 \include{muihop}
@@ -143,8 +151,8 @@
 %\addcontentsline{toc}{chapter}{参考文献}
 %\bibliographystyle{unsrt}
 %\bibliography{reference}
-\bibliographystyle{abbrv}
-\bibliography{ref}
+\bibliographystyle{bmc-mathphys}
+\bibliography{BMCBioinformatics2014}
 \include{paper}
 \include{ack}
 \includepdf{sign.pdf}

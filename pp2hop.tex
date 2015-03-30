@@ -8,75 +8,67 @@
 
 
  \section{用k-mer来表示序列}
- \label{sec:add}
- 一般来说，k-mer表示序列中k个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用k-mer来刻画序列的特征。DNA序列一共有4种不同的核苷酸，因此一个DNA序列中
+ 一般来说，k-mer表示序列中k个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用k-mer来刻画序列的特征。DNA序列一共有4 种不同的核苷酸，因此一个DNA序列中
  最多有$4_{k}$个k-mer。一个序列对应的k-mer频率作为其中的一个分量。为了减少计算量，k值不宜取得过大。事实上，不同的k-mer在描述DNA序列方面有不同的
- 影响，正如文献[21,22]中所说的，在2到7的范围里,k=4是最适合表示DNA序列的，因此我们使用k=4来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中k-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256.
+ 影响，正如文献~\cite{chor2009genomic,zhou2008barcodes}中所说的，在2到7的范围里,k=4是最适合表示DNA序列的，因此我们使用k=4来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中k-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256.
 
   \section{将序列从k-mer空间转换到主题空间}
 元基因组中，序列被当成文档，k-mer被当成关键词，来自同一物种的序列应该比不同物种的序列有更多相似的主题信息，因此，对于目前考虑的
 归类问题，主题信息在描述元基因组序列方面可能比k-mer更有效。我们采用隐含狄利克雷分布(LDA)--一个机器学习领域非常流行的主题来处理这个问题。在上一章中，我们也对主题模型进行了介绍。
 
+After training a LDA model, we can get the topic distribution of each read. Fig.~\ref{fig:3} illustrates the application of LDA to metagenomic reads. The left layer represents the DNA reads, the middle layer represents topics, and the right layer represents $k$-mers. We use the topic distribution of each read to represent the read. As the number of topics is usually smaller than the number of $k$-mers, this process is equivalent to dimension reduction. Here, the number of topics is a tunable parameter. In our experimental study, we set it to be 20 and 100 for simulated data and real data, respectively.
 \section{用SKWIC算法对向量化的序列进行聚类}
+%\subsection*{Clustering the vectorized reads by the SKWIC algorithm}
+和MCluster一样~\cite{liao2014new}, 我们采用 SKWIC 算法 对向量化的元基因序列进行聚类. SKWIC是在经典的$K$-means算法基础上增加了自动加权机制的聚类算法~\cite{frigui2004simultaneous}.  %K-means or K-median method was proposed in existing unsupervised methods, and features are equally treated in their method. However, the relationships between clusters and their feature sets need to be discovered in the binning process. In order to tackle this issue, Frigui et al proposed SKWIC algorithm which is a variant of classical K-means method. Roughly speaking, k-mer preference was exploited to improve the performance of clustering in this method. Furthermore, k-mer preference can also boost the clustering performance of bioinformatics problems, which was validated in miRNA sequences clustering~\cite{yi2012effective} and metagenomic sequences binning~\cite{liao2014new}.
+%As a variant of K-means,
+它试图最小化下面的目标函数:
+\begin{equation}\label{eq1}
+J(K,V;\chi)=
+\sum_{i=1}^{K}
+\sum_{x_{j}\in \chi_{i}}
+%$\sum_{$x_{j}$ $\in$ $\chi$}$
+\sum_{k=1}^{n}
+v_{ik}D^{k}_{wc_{ij}}
++\sum_{i=1}^{K}\delta_{i}
+\sum_{k=1}^{n}v_{ik}^{2}
+%J(C,V;)
+%\eqno{(1)}
+\end{equation}
+subject to
+\begin{equation}\label{eq2}
+v_{ik}
+\in [0,1]\quad
+\forall
+i,k \quad and \quad \sum_{k=1}^{n}v_{ik}=1,\quad \forall i
+\end{equation}
+\emph{K} 是类的个数, \emph{n} 是特征的个数, 这里是主题的个数. $X_{i}$ 是第\emph{i}个类的序列个数, $v_{ik}$ 是第\emph{i}个类在第\emph{k} 个特征上的权值, $D^{k}_{wc_{ij}}$ 是第\emph{j}条序列和第\emph{i}个类中心在第\emph{k}维特征上的距离。
+在这个目标函数中，我们应该选择一种距离度量方式。根据\cite{liao2014new}中的结论，和欧式距离以及余弦距离相比，曼哈顿距离在对生物序列进行聚类时效果最佳，因此此处我们也采用曼哈顿距离进行距离度量。
 
-\section{性能分析}
-这一节中，我们用模拟数据和真实数据来评估我们方法的性能。我们将我们的方法和现有的MetaCluster3.0/5.0，AbundanceBin和MCluster进行了对比，MCluster
-是最近的元基因组聚类的非监督方法。
+与传统的$K$-means 算法不同，目标函数(\ref{eq1})额外考虑了每一维特征对于每一个类的权重$v_{ik}$.
+$\delta_{i}$ 来权衡$v_{ik}$ 的相对重要性。为了解决这个优化问题，我们采用拉格朗日乘子法，
+\begin{equation}\label{eq3}
+v_{ik}=\frac{1}{n}+\frac{1}{2\delta_{i}}\sum_{x_{j}\in\chi_{i}}
+[\frac{\sum_{l=1}^{n}D^{l}_{wc_{ij}}}{n}-D^{k}_{wc_{ij}}].
+\end{equation}
+%The parameter $\delta_{i}$ in the above equations is important because it is used to weight the relative importance of the second component in Eq.~\eqref{eq1}. If $\delta_{i}$ is too small, then the contribution of the second part in Eq.~\eqref{eq1} will be negligible, and one dimension in cluster $i$ will have a relative high weight {\color{red}compared to} other dimensions, which would have a quite small weight or even a zero weight. On the other hand, if $\delta_{i}$ is chosen too large, then almost all dimensions in cluster $i$ will be equally weighted by $\frac{1}{n}$ approximately.
 
-\section{数据集}
-\subsection{模拟数据}
-数据由MetaSim[24] (一个基因组和元基因组序列模拟软件)生成。我们从物种丰度各异的物种中采样出元基因组序列数据。
+$\delta_{i}$ 计算公式如下：
 
-由于MetaCluster3.0 在长序列上表现良好，我们模拟了不同物种丰度和物种个数(从2到10)的长序列数据, 16个物种表示为D1到D16，我们同样生成了
-相对而言高丰度的序列(50k和500k序列)，因为AbundanceBin是专门处理高丰度的序列。10个数据集分别称为S1到S10。这些数据集的细节列在表1和表2 中。
+\begin{equation}\label{eq4}
+\delta^{(t)}_{i}=K_{\delta}\frac{\sum_{x_{j}\in\chi^{(t-1)}_{i}}\sum_{k=1}^{n}v^{(t-1)}_{ik}(D^{k}_{wc_{ij}})^{(t-1)}}
+{\sum_{k=1}^{n}(v^{(t-1)}_{ik})^2}.
+\end{equation}
 
-现在真实数据集中包含了数以百万的短序列是非常常见的，因此我们模拟了两个数据集分别有一百万条长为75bp的序列，分别包含20和50个物种，称为数据集A 和B。数据集A中的20个物种中，相对测序深度为1 3 5 10的物种数各有5个物种。数据集B中的50个物种，有6个物种测序深度为6,5个物种相对测序深度为8,5个物种测序深度为10，剩下的物种测序深度为1，A和B的细节在表3中。
+SKWIC的聚类过程就是重复下面的步骤直到类中心不变或者变化范围足够小：
+\begin{enumerate}
+\item 设定聚类个数为 \emph{K}  (序列所属的物种数);
+\item 随机选择 \emph{K} 个类的类中心, 并将权值矩阵设定为$v_{ik}$=$\frac{1}{n}$;
+\item 利用公式~\eqref{eq3}更新权值矩阵$v_{ik}$;
+\item 将序列归到距离它最近的类;
+\item 更新每个类的类中心;
+\item 利用公式~\eqref{eq4}更新$\delta_{i}$
+\end{enumerate}
 
-考虑到 MetaCluster5.0只能处理极高丰度的短序列，我们也生成了5个数据集，分别有3000k个长为128bp的短序列，并且将我们的方法与MetaCluster5.0 进行比较。这些数据集分别称为C D E F G，具体细节在表4中。
-
-\subsection{真实数据集}
-由于NCBI的Acid Mine Drainage元基因组数据已经被大量研究，我们也采用该数据集来评价我们的方法。这个真实数据集包含2534个重叠群(contig), 序列长度为
-5000bp，这些重叠群是由103462个高质量的修整过的序列组装而成。数据集包括5个已知的物种：Leptospirillum sp.Group II, Leptospirillum sp.Group III, Ferroplasma acid armanus Type I, Ferroplasma sp.Type II
-and Thermoplasmatales archaeon Gpl 以及一些来自未知物种的序列。五个物种分别属于两个超界和三个属，分类图如图4所示。序列有2534个contig。 众所周知
-对于未知物种信息的序列，我们评价聚类算法的性能比较困难，因此我们删除其中没有物种注释的序列，并得到2424个contigs，表示为数据集R1。
-
-\subsection{评价标准}
-为了评价聚类结果，我们考虑三种度量方法，Precision(Pr)，Sensitivity(Se)以及F1-measure(F1). 假定有一个元基因组数据集包含了N个物种，并最终归到M个类中，Rij表示第i个Cluster中包含第j个物种的序列的数量。
-
-Precision和Sensitivity的定义如下所示
-
-
-上述 "unclassified reads" 表示聚类算法聚类结果中未进行归类的序列。F1-measaure定义如下所示：
-
-\section{实验结果}
-\subsection{主题个数的影响}
-概率主题模型是一种非监督技术。模型中的主题信息是隐藏的，所以我们需要为每个数据集设定主题个数。此处，我们检测LDA模型中主题个数如何影响TM-MCluster 的聚类性能。我们采用D12数据集，序列来自5个物种，并且修改主题个数从2到100。图5的结果显示，当主题个数是20的时候，我们的方法可以
-取得较好的聚类效果。当主题个数为2时，聚类结果差强人意。显然，太少的主题个数可能会导致信息的丢失，太多的主题个数也许会引入噪音，也会产生负面的影响。
-
-\subsection{模拟数据集实验结果}
-首先，我们将我们的方法与MetaCluster3.0 和MCluster在4个均匀分布的数据集上进行比较，数据集D1 D8 D11 D13分别包含2 3 5 10个物种。结果显示在表5 中。
-从表5中可以看出，我们的方法在三个数据集上取得最高的F1值，在两个数据集上取得最高的precision和sensitivity。
-
-我们同样check我们的方法在12个非均匀分布的数据集上的性能，结果显示在表6.在12个测试数据集中，我们的方法分别在10，6和5个数据集上取得了最高的F1 Precision以及Sensitivity。MCluster在三个数据集上取得最好的F1值和sensitivity, 而MetaCluster3.0分别在7个和5个数据集上分别取得最高的precision 和Sensitivity，但是F1值却差强人意。值得注意的是，我们的方法似乎在分布不均匀的数据集上表现更加优异。
-
-我们进一步查看我们方法在相对高丰度数据集上的性能。由于AbundanceBin只能处理高丰度数据集，我们将我们的方法与AbundanceBin和MCluster进行比较，结果如表7所示。在10个测试数据集上，我们的方法分别在9 6 和8个数据集上取得最高的F1值，Sensitivity以及Precision。MCluster只取得了一个最高的F1值和2个最高的precision，AbundanceBin获得最高的4个Sensitivity。综合来看，在较高丰度数据集上，我们方法性能优于其他方法。
-
-现实中，越来越多的元基因组数据都是短序列(大概100bp)，因此我们通过处理短序列数据来评价我们的方法。由于MetaCluster 3.0处理短序列能力有限，
-我们只列出AbundanceBin MCluster以及我们的方法在数据集A和B(短序列)的性能。和AbundanceBin以及MCluster相比，TM-MCluster取得了最高的F1值以及precision，这和我们方法在长序列上的结果是不谋而合的。
-
-由于对于大元基因组数据进行聚类耗时费内存，时间和空间效率也是一项重要的评价指标。此处，我们列出AbundanceBin MCluster以及我们的方法在数据集A和B上的时间和空间消耗，结果显示在表9中。我们可以看出AbundanceBin花费最少的内存，而MCluster运行最快。由于训练LDA是耗时的，TM-MCluster花费最多的时间，此外空间消耗也较大。
-
-最后，我们还比较了TM-MCluster以及MetaCluster 5.0在数据集C D E F G上的性能，结果列在表10上。结果表明，TM-MCluster在4个数据集上取得明显高于MetaCluster5.0的Sensitivity，这主要是由于MetaCluster 5.0在聚类时，将低丰度物种的序列都归到小的类里，最后再丢弃。不过，MetaCluster5.0 在五个数据集上都取得较高的precision。由于F-measure是Sensitivity和precision上的权衡，我们的方法依然在4个数据集上取得了较高的F-measure.
-此外，MetaCluster 5.0在数据集D差强人意，而这个数据碰巧有最大数量的物种数，并且diverse的丰度比。总而言之，在短序列的高丰度数据集上，
-我们的方法取得优于MetaCluster 5.0的性能。
-
-\subsection{真实数据集实验结果}
-此外，我们还在真实数据集上测试我们方法的性能。从图4上，我们知道R1上的序列属于两个超界，三个属以及五个物种。因此我们预先设定AbundanceBin
-MCluster以及我们的方法的聚类个数分别为2，3和5。由于MetaCluster 3.0可以自动决定最终聚类的个数，我们不用为他设定类的个数。对于我们的方法，主题个数设定为100，最终MetaCluster3.0 输出了2个类。上述所有结果都显示在表11中。
-
-尽管MetaCluster 3.0可以自动决定类的个数，他的结果是不准确的，因为R1数据集中有5个物种。对于其他三个方法，AbundanceBin 取得最高的Sensitivity，但是precision是最低的。对于每个预先设定的聚类个数，我们的方法取得最高的F1值。值得一提的是，当预设类个数为数据集实际物种个数5时，我们的方法取得最高的precision以及F1值，以及仅次于AbundanceBin的Sensitivity。
-
-对于AbundanceBin，MCluster以及我们的方法，当预设的聚类个数从2上升到5时，聚类性能出现下降趋势。这是因为，设定聚类个数分别为2 3 和5时，会将R1数据集分别往界、属以及类层次聚类。在一个更高层面的，两个类中心的距离一般来说是大于低层次的类中心，因此再较高层次上更容易聚类。
 
 
 

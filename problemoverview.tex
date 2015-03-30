@@ -16,70 +16,66 @@ LDA试图通过下面的过程来生成文档：
 通过训练LDA模型，我可以得到每个序列的主题分布。图2表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
 我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100.
 
-\subsection*{Transforming reads from $k$-mer space to topic space}
+
+
 Topic models were originally proposed to discover latent topics from a set of documents that are represented by the bag-of-word model. Latent topics indicate implicit semantic topics in documents, which have been shown to be more effective in describing the semantic relationships among documents than traditional keyword based models. In metagenomics, reads can be seen as documents and $k$-mers as keywords in documents. Reads from the same species should share more similar latent ``topics'' than reads from different species. So ``topics'' may be more effective than $k$-mers in describing metagenomic reads as far as the binning problem is considered. Here, we use the Latent Dirichlet Allocation (LDA) --- a popular topic model from machine learning area cite{blei2003}. In what follows, we first introduce the LDA model, and then describe how to employ the LDA to extract latent topics from metagenomic reads.
 Fig.~\ref{fig:2} illustrates the LDA model. The outer plate represents documents, while the inner plate represents the repeated choice of topics and words within a document.
+
+
 
 \begin{figure}[h!]
 \centering
     \includegraphics[width=9cm]{./example/LDAModel.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{\csentence{The LDA model.}}
+    \caption{The LDA model.}
             \label{fig:1}
-      \end{figure}
+\end{figure}
 
 \begin{figure}[h!]
 \centering
     \includegraphics[width=7cm]{./example/LDARepresentation.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{\csentence{Applying the LDA model to metagenomic reads.}}
+    \caption{Applying the LDA model to metagenomic reads.}
             \label{fig:2}
-      \end{figure}
+\end{figure}
 
-\iffalse
-Some notations are as follows: \emph{M} denotes the number of documents; $N_{i}$ means the number of words in the \emph{i}-th document; \emph{N} denotes the number of words in the vocabulary; \emph{K} denotes the number of topics; $\alpha$ (a $K$-dimensional vector) is the parameter of the Dirichlet prior on per-document topic distribution; $\beta$ (a \emph{N}-dimensional vector) is the parameter of the Dirichlet prior on per-topic word distribution; $\theta_{i}$ (a $K$-dimensional vector) is the topic distribution for document \emph{i}; $\phi_{k}$ (a \emph{N}-dimensional vector) is the word distribution for topic \emph{k}; $z_{ij}$ is the topic for the \emph{j}th word in document \emph{i}; $w_{ij}$ is the generated $j$-th word in document $i$.
-
-LDA tries to generate the documents by the following process~\cite{blei2003}:
-\begin{enumerate}
-\item For the \emph{i}-th document, initialize $\alpha$ with random value, then choose $\theta_{i}\sim$Dirichlet($\alpha$), where \emph{i}$\in$ {1,2...\emph{M}};
-\item For the \emph{j}-th word of the \emph{i}-th document, choose $z_{ij}\sim$Multinomial($\theta_{i}$), where \emph{i}$\in${1,2..\emph{M}}, \emph{j}$\in${1,2..$N_{i}$};
-\item Initialize $\beta$ with random value, then choose $\phi_{z_{ij}}\sim$Dirichlet($\beta$);
-\item Choose $w_{ij}\sim$Multinomial($\phi_{z_{ij}}$).
-\end{enumerate}
-
-After the document generating process, the estimation of LDA model can be implemented by the variational EM algorithm~\cite{blei2003} or Gibbs sampling~\cite{griffiths2004finding}.
-
-The estimation of LDA  model  given  the  functional element abundance  data  can  be  estimated  via  the  Gibbs Sampling Monte Carlo process [8]. The estimation process requires a separately sampling   latent   topic   for   each functional element in each sample according to the posterior probability
-
-In which is the total number of metagenomic reads
-assigned  to  latent  topic j except  for current functional
-element and  is  the  total  number  of  functional
-element s in  read d (except  for  wi) that  have  been
-assigned to topic j.
-\fi
-
-Some notations are as follows: \emph{D} denotes the number of documents; $N_{d}$ denotes the number of words in the \emph{d}-th document; \emph{W} denotes the number of words in the vocabulary; \emph{T} denotes the number of topics; $\alpha$ (a $T$-dimensional vector) is the parameter of the Dirichlet prior on per-document topic distribution; $\beta$ (a \emph{W}-dimensional vector) is the parameter of the Dirichlet prior on per-topic word distribution; $\theta_{d}$ (a $T$-dimensional vector) is the topic distribution for document \emph{d}; $\phi_{j}$ (a \emph{W}-dimensional vector) is the word distribution for topic \emph{j};
+数学符号定义如下: \emph{D} 表示文档个数; $N_{d}$ 表示第 \emph{d} 篇文档的单词个数; \emph{W} 表示单词表中单词的个数; \emph{T} 表示主题个数; $\alpha$ ($T$ 维向量) 是每篇文档主题分布的狄利克雷先验的参数; $\beta$ (\emph{W}维向量) 是每个主题的单词分布的狄利克雷先验的参数; $\theta_{d}$ ($T$维向量) 是第\emph{d}篇文档的主题分布; $\phi_{j}$ (\emph{W}维向量)是主题\emph{j}的单词分布;
 %$z_{ij}$ is the topic for the \emph{j}th word in document \emph{i}; $w_{ij}$ is the generated $j$th word in document $i$.
 
-LDA tries to generate the documents by the following process~\cite{blei2003}:
+LDA模型通过下面的过程来生成文档，因此也属于生成模型 cite{blei2003}:
 \begin{enumerate}
-\item For the \emph{d}-th document, initialize $\alpha$ with random value, then choose $\theta_{d}\sim$Dirichlet($\alpha$), where \emph{d}$\in$ {1, 2, ..., \emph{D}};
-\item For the \emph{t}-th topic, initialize $\beta$ with random value, then choose $\phi_{t}\sim$Dirichlet($\beta$);
-\item For each word $w_{i}$ of the \emph{d}-th document, choose $z_{i}\sim$Multinomial($\theta_{d}$), and sample $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
+\item 对于第\emph{d} 篇文档, 初始化$\alpha$ 为随机值, 然后$\theta_{d}\sim$ Dirichlet($\alpha$), \emph{d}$\in$ {1, 2, ..., \emph{D}};
+\item 对于第 \emph{t} 个主题, 初始化 $\beta$ 为随机值, 然后 $\phi_{t}\sim$Dirichlet($\beta$);
+\item 对于第 \emph{d}篇文档的$w_{i}$,  $z_{i}\sim$ Multinomial($\theta_{d}$), $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
 \end{enumerate}
 
-We apply the LDA model to metagenomic sequences, where reads are treated as documents and $k$-mers are treated as words.
-Given a set of metagenomic reads, the estimation of LDA model can  be  estimated via the Gibbs Sampling Monte Carlo process~\cite{griffiths2004finding}. The estimation process requires a separately sampling of latent topics for each $k$-mer in each read according to the posterior probability:
+我们采样LDA模型来处理元基因组序列，序列看成文档，k-mer看成单词。对于给定的元基因组序列，LDA模型的估计可以采用吉布斯采样蒙特拉罗过程
+~\cite{griffiths2004finding}。根据后验概率， 估计过程需要单独为每个序列每个k-mer进行采样：
+
+
 \begin{equation}\label{eq0}
 P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\beta +n^{w_{i}}_{-i,j}}{W\beta+n^{*}_{-i,j}}\cdot \frac{\alpha +n^{d}_{-i,j}}{T\alpha+n^{d}_{-i,*}}
 \end{equation}
-where $\mathbf{w{_{-i}}}$ is the current assignment $k$-mers except for $w_{i}$, $\mathbf{z{_{-w{_{i}}}}}$ is the current assignment topics of all $k$-mers except for $w_{i}$, $n^{w_{i}}_{-i,j}$ is the total number of $k$-mers assigned to latent topic $j$ except for the current $k$-mer $w_{i}$, $n^{d}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ in read $d$ that have been assigned to topic $j$, $n^{*}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ assigned to latent topic $j$, and $n^{d}_{-i,*}$ is the total number of $k$-mers except for $w_{i}$ in read $d$. In  our  model, we assume  symmetric
-priors  and  set  $\alpha$=0.1,  $\beta$=0.01. Such  a  parameter  setting  is to make  topic  modeling  results more  diverse.
 
-After training a LDA model, we can get the topic distribution of each read. Fig.~\ref{fig:3} illustrates the application of LDA to metagenomic reads. The left layer represents the DNA reads, the middle layer represents topics, and the right layer represents $k$-mers. We use the topic distribution of each read to represent the read. As the number of topics is usually smaller than the number of $k$-mers, this process is equivalent to dimension reduction. Here, the number of topics is a tunable parameter. In our experimental study, we set it to be 20 and 100 for simulated data and real data, respectively.
+$\mathbf{w{_{-i}}}$ 是指除了$w_{i}$以外指派的$k$-mer, 
+$\mathbf{z{_{-w{_{i}}}}}$ 是指除了$w_{i}$以外为所有$k$-mer 指派的topic 
+$n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为k-mer指定的topic是j的个数，
+$n^{d}_{-i,j}$ 是指序列d中，除了$w_{i}$以外，指定topic为j的k-mer总数
+$n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为j的k-mer总数，
+$n^{d}_{-i,*}$ 是指序列d中除了$w_{i}$以外的$k$-mers总数
+
+
+where $\mathbf{w{_{-i}}}$ is the current assignment $k$-mers except for $w_{i}$, 
+$\mathbf{z{_{-w{_{i}}}}}$ is the current assignment topics of all $k$-mers except for $w_{i}$, 
+$n^{w_{i}}_{-i,j}$ is the total number of $k$-mers assigned to latent topic $j$ except for the current $k$-mer $w_{i}$, 
+$n^{d}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ in read $d$ that have been assigned to topic $j$, 
+$n^{*}_{-i,j}$ is the total number of $k$-mers except for $w_{i}$ assigned to latent topic $j$, 
+and $n^{d}_{-i,*}$ is the total number of $k$-mers except for $w_{i}$ in read $d$.
+
+
+在我们的模型中，我们设定Dirichlet先验的参数$\alpha$=0.1,  $\beta$=0.01, 这样的参数设定是为了使得主题模型的结果多种多样的。
 
 
 \section{本章小结}
-在本章中，我们介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA的来龙去脉，如何提出LDA模型，如何去求解，等等。
-在文档处理中，LDA因为可以抽取文档的主题信息，提取语义信息而受到广泛的关注。最初由于Variation Bayesian的方法求解
+在本章中，我们介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA的来龙去脉，如何提出LDA模型，如何去求解，等等。在文档处理中，LDA因为可以抽取文档的主题信息，提取语义信息而受到广泛的关注。最初由于Variation Bayesian的方法求解
 
