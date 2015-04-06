@@ -11,25 +11,30 @@
 GC含量，密码子的使用等等。到现在为止，SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm}等已经被用来对宏基因组序列进行归类。然而这些方法的性能仍然在很大程度上依赖于作为训练样本的基因组。
 \section{非监督学习方法}
 %unsupervised
-为了克服这些方法的缺点以上，研究人员又提出非监督或半监管技术来处理未知物种的宏基因组数据。 
+为了克服这些方法的缺点以上，研究人员又提出非监督或半监管技术来处理未知物种的宏基因组数据。
 \subsection{AbundanceBin}
-Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin方法从序列中抽取K-mer，并利用K-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。
-具体的，它首先统计序列中k-mer词频，定义第i类的基因组大小和丰度水平为$g_{i}$, $lamda_i$,定义类的个数为S，因为它还提供一种
+Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin方法从序列中抽取$k$-mer，并利用$k$-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。
+具体的，它首先统计序列中$k$mer词频，定义第i类的基因组大小和丰度水平为$g_{i}$, $\lambda_i$,定义类的个数为S，因为它还提供一种
 自动决定物种数量的递归归类模式。
 
-定义$thita$={S,g,$lamda$}, 归类算法的目标是最大化观测到的词频向量，和参数$thita$组成的联合概率的对数值，$logP(x, thita)$.
+定义$\theta$=${$S,g,$\lambda_i$$}$, 归类算法的目标是最大化观测到的词频向量，和参数$thita$组成的联合概率的对数值，$logP(x, thita)$.
 隐变量是每个kmer所属类名。随后，采用期望最大化算法(Expectation-Maximization)算法来解决这个优化问题。
-1. 初始化三个隐变量，丰度值设置为10， 基因组大小为1000000
-2. 根据泊松分布，计算第j个kmer wj属于第i类的概率\\
-$P(w_j \epsilon s_i\mid n(w_j)) = \frac{g_i}{\sum_{m=1}^{S} g_m(\frac{\lambda_m}{\lambda_i})^{n(w_j)} e^{(\lambda_i-\lambda_m)}}$
+\begin{enumerate}
+\item 初始化三个隐变量，丰度值设置为10， 基因组大小为1000000
+\item 根据泊松分布，计算第j个$k$mer $w_j$属于第i类的概率\\
+\begin{equation}
+P(w_j \epsilon s_i\mid n(w_j)) = \frac{g_i}{\sum_{m=1}^{S} g_m(\frac{\lambda_m}{\lambda_i})^{n(w_j)} e^{(\lambda_i-\lambda_m)}}
+\end{equation}
+\item 由公式计算$g_i$,$\lambda_i$\\
+\begin{equation}
+g_i=\sum_{j=1}^{w}P(w_j\epsilon s_i\mid n(w_j))
+\end{equation}
+\begin{equation}
+\lambda_i= \frac{\sum_{j=1}^{W}n(w_j)P(w_j\epsilon s_i\mid n(w_j))}{g_i}
+\end{equation}
 
-3. 由公式计算gi,lamdai\\
-$g_i=\sum_{j=1}^{w}P(w_j\epsilon s_i\mid n(w_j))$\\
-$\lambda_i= \frac{\sum_{j=1}^{W}n(w_j)P(w_j\epsilon s_i\mid n(w_j))  }{g_i}$
-
-
-4. 迭代2,3步，使得参数收敛或者迭代次数达到一定次数
-
+\item 迭代2,3步，使得参数收敛或者迭代次数达到一定次数
+\end{enumerate}
 EM算法收敛之后，我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做出归类的决策。
 
 然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。正如文中所说，他需要和MetaCluster 2.0结合使用，可以取得较好的聚类效果。
@@ -38,28 +43,43 @@ EM算法收敛之后，我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做
 
 Leung等人~\cite{leung2011robust}开发了MetaCluster 3.0方法
 MetaCluster 3.0具体算法如下：
-1. 计算k-mer分布，根据已有文献的结论，k=4是k=2到7里面效果最佳的
-2. 距离度量采用Spearman Footrule distance，因为Spearman distance不依赖于数量级，对于有较大值的k-mer不受太大的影响
-3. 采用K-median算法，对原始数据进行自上而下的聚类，采用Spearman Footrule distance距离进行度量
-4. 计算每两个Cluster之间的类内距离，如果小于给定的阈值，则归并为一个类。
-
+\begin{enumerate}
+\item 计算$k$mer分布，根据已有文献的结论，k=4是k=2到7里面效果最佳的
+\item 距离度量采用Spearman Footrule distance，因为Spearman distance不依赖于数量级，对于有较大值的$k$mer不受太大的影响
+\item 采用K-median算法，对原始数据进行自上而下的聚类，采用Spearman Footrule distance距离进行度量
+\item 计算每两个Cluster之间的类内距离，如果小于给定的阈值，则归并为一个类。
+\end{enumerate}
 MetaCluster 3.0 在序列长为1000bp的均匀和不均匀物种上的表现都优于AbundanceBin。但是MetaCluster 3.0不适合处理短序列
 
 
 \subsection{MetaCluster 4.0}
+为了解决短序列聚类的问题，Wang等人提出了MetaCluster 4.0~\cite{wang2012metacluster1}. 该方法基于序列重叠性，将长度小于500bp的短序列组装为长序列
+
+MetaCluster 4.0算法如下：
+\begin{enumerate}
+\item 概率聚类
+\item 估计4-mer分布
+%半岛铁盒
+\item MetaCluster 3.0的聚类
+\end{enumerate}
+
+\subsection{MetaCluster 5.0}
+为了能够处理低丰度数据，Wang等人随后提出了MetaCluster 5.0~\cite{wang2012metacluster2}，该算法包含了两轮的聚类，
 
 
-随后，Wang等人提出了MetaCluster3.0的两个改进算法，MetaCluster 4.0~\cite{wang2012metacluster1} 和MetaCluster5.0~\cite{wang2012metacluster2}，来处理
-处理短序列。MetaCluster 4.0基于序列重叠性，将长度小于500bp的短序列组装为长序列
-但是，它处理低丰度的序列。MetaCluster5.0作为MetaCluster4.0的改进版，能够处理低丰度数据。2014年APBC会议上，Wang Yi等研究人员开发
-MetaCluster-TA~\cite{wang2014metacluster}，一个通过装配和归类来进行注释的序列分类注释工具。它先将短序列装配成长的“虚拟重叠群”，并
-然后应用类似于MetaCluster 5.0的方法来对这些重叠群和序列进行聚类，
-并最后将所有的簇进行归类。这一系列的MetaCluster
+这一系列的MetaCluster
 算法可以自动确定簇的数目，这对于真实数据中绝大多数序列的物种名未知时是至关重要的。
-最近廖瑞琪师兄还提出了一种新的非监督方法MCluster对宏基因组序列进行聚类~\cite{liao2014new}。 MCluster使用的N-gram提取序列特征，以及自动加权功能来改善的Kmeans算法的性能。实验结果表明，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster3.0明显更优的性能，在短序列上，和MetaCluster 5.0相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure值。
+\subsection{MetaCluster-TA}
+2014年 APBC会议上，Wang Yi等研究人员提出了 MetaCluster-TA~\cite{wang2014metacluster}-----通过装配和归类来进行注释的序列分类注释工具。它先将短序列装配成长的“虚拟重叠群”，并
+然后应用类似于MetaCluster 5.0的方法来对这些重叠群和序列进行聚类，
+并最后将所有的簇进行归类。
+
+\subsection{MCluster}
+最近廖瑞琪师兄还提出了一种新的非监督方法MCluster~\cite{liao2014new}对宏基因组序列进行聚类。他的创新点在于聚类算法在Kmeans算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
+
 
 %our method
-在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写).这个方法包含三步：1)用K-mer频率向量来表示序列 2)通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量 3)和MCluster~\cite{liao2014new}方法一样，用SKWIC 算法对这些转化后的序列进行聚类。
+在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写).这个方法包含三步：1) 用$K$mer频率向量来表示序列 2)通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量 3)和MCluster~\cite{liao2014new}方法一样，用SKWIC 算法对这些转化后的序列进行聚类。
 
 我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster.
 实验结果表明，TM-MCluster在多数测试数据集上优于四个已有的聚类算法。
@@ -96,8 +116,8 @@ LDA模型通过下面的过程来生成文档，因此也属于生成模型 cite{blei2003}:
 \item 对于第 \emph{d}篇文档的$w_{i}$,  $z_{i}\sim$ Multinomial($\theta_{d}$), $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
 \end{enumerate}
 \subsection{Gibbs Sampling方法求解LDA}
-我们采用LDA模型来处理元基因组序列，序列看成文档，k-mer看成单词。对于给定的元基因组序列，LDA模型的估计可以采用吉布斯采样蒙特拉罗过程
-~\cite{griffiths2004finding}。根据后验概率，估计过程需要单独为每个序列每个k-mer进行采样：
+我们采用LDA模型来处理元基因组序列，序列看成文档，$k$mer看成单词。对于给定的元基因组序列，LDA模型的估计可以采用吉布斯采样蒙特拉罗过程
+~\cite{griffiths2004finding}。根据后验概率，估计过程需要单独为每个序列每个$k$mer进行采样：
 
 \begin{equation}\label{eq0}
 P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\beta +n^{w_{i}}_{-i,j}}{W\beta+n^{*}_{-i,j}}\cdot \frac{\alpha +n^{d}_{-i,j}}{T\alpha+n^{d}_{-i,*}}
@@ -105,9 +125,9 @@ P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\
 
 $\mathbf{w{_{-i}}}$ 是指除了$w_{i}$以外指派的$k$-mer,
 $\mathbf{z{_{-w{_{i}}}}}$ 是指除了$w_{i}$以外为所有$k$-mer 指派的topic
-$n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为k-mer指定的topic是j的个数，
-$n^{d}_{-i,j}$ 是指序列d中，除了$w_{i}$以外，指定topic为j的k-mer总数
-$n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为j的k-mer总数，
+$n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为$k$mer指定的topic是j的个数，
+$n^{d}_{-i,j}$ 是指序列d中，除了$w_{i}$以外，指定topic为j的$k$mer总数
+$n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为j的$k$mer总数，
 $n^{d}_{-i,*}$ 是指序列d中除了$w_{i}$以外的$k$-mers总数
 
 通过训练LDA模型，我可以得到每个序列的主题分布。
