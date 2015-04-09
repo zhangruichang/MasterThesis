@@ -9,6 +9,12 @@ sampled directly from the environment. The assignment of these metagenomic
 reads into different species or taxonomical classes is a vital step for metagenomic
 analysis, which is referred to as binning  of metagenomic data.
 
+
+Currently, methods can be categoried into two groups: supervised learning and unsupervised learning methods. For supervised learning methods,
+referece genome is needed, and they aligned reads to referece genome, and then bin reads according to the alignment results. However, for real metagenomic datasets, most species are unknown, so supervised methods are not available. So unsupervised learning are more popular recently, researchers proposed AbundanceBin, MetaCluster and MCluster one after another.
+
+
+
 In this paper, we propose a new method TM-MCluster  for binning
 metagenomic reads. First, we represent each metagenomic read as a set of
 ¡°k-mers¡± with their frequencies occurring in the read. Then, we employ a
