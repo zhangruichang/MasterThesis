@@ -1,26 +1,26 @@
-\chapter{基于主题模型的宏基因组聚类算法}
-\rhead{基于主题模型的宏基因组聚类算法}
+\chapter{基于主题模型的元基因组聚类算法}
+\rhead{基于主题模型的元基因组聚类算法}
 
-本文提出的方法包含三步：1) 用k-mer频率向量来表示序列 2) 通过LDA模型，将每个k-mer频率向量转化为主题分布向量 3) 和MCluster一样，用SKWIC
-算法对向量化的序列进行聚类。图~\cite{fig:1}中显示了TM-MCluster的工作流程，随后将给出每一步的具体细节。
+本文提出的方法包含三步：1) 用k-mer频率向量来表示序列 ~2) 通过LDA模型，将每个k-mer频率向量转化为主题分布向量 ~3) 和MCluster一样，用SKWIC
+算法对向量化的序列进行聚类。图~\ref{fig:5}中显示了TM-MCluster的工作流程，随后将给出每一步的具体细节。
 \begin{figure}[h!]
 \centering
     \includegraphics[width=17cm]{./example/ModulePipeline.pdf}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
     \caption{TM-MCluster的工作流程。}
-            \label{fig:1}
+            \label{fig:5}
 \end{figure}
 
  \section{基于k-mer的元基因组序列特征提取}
- 一般来说，k-mer表示序列中k个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用k-mer来刻画序列的特征。DNA序列一共有4 种不同的核苷酸，因此一个DNA序列中
+ 一般来说，k-mer表示序列中k个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用$k$-mer来刻画序列的特征。DNA序列一共有4 种不同的核苷酸，因此一个DNA序列中
  最多有$4_{k}$个k-mer。一个序列对应的k-mer频率作为其中的一个分量。为了减少计算量，k值不宜取得过大。事实上，不同的k-mer在描述DNA序列方面有不同的
- 影响，正如文献~\cite{chor2009genomic,zhou2008barcodes}中所说的，在2到7的范围里,k=4是最适合表示DNA序列的，因此我们使用k=4来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中k-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256。
+ 影响，正如文献~\cite{chor2009genomic,zhou2008barcodes}中所说的，在2到7的范围里,k=4是最适合表示DNA序列的，因此我们使用k=4 来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中k-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256。
 
   \section{基于主题模型的特征向量空间变换}
 元基因组中，序列被当成文档，k-mer被当成关键词，来自同一物种的序列应该比不同物种的序列有更多相似的主题信息，因此，对于目前考虑的
 归类问题，主题信息在描述元基因组序列方面可能比k-mer更有效。我们采用隐含狄利克雷分布(LDA)--一个机器学习领域非常流行的主题来处理这个问题。在上一章中，我们也对主题模型进行了介绍。
 用LDA对序列建模之后，我们可以得到每个序列的主题分布。
-图\cite{fig:2}表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
+图\ref{fig:6}表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
 我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100。
 
 \begin{figure}[h!]
@@ -28,10 +28,10 @@
     \includegraphics[width=10cm]{./example/LDARepresentation.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
     \caption{主题模型在元基因组序列上的应用}
-            \label{fig:2}
+            \label{fig:6}
 \end{figure}
 
-\section{基于SKWIC算法的元基因序列聚类}
+\section{基于SKWIC算法的元基因组序列聚类}
 %\subsection*{Clustering the vectorized reads by the SKWIC algorithm}
 和MCluster~\cite{liao2014new}一样, 我们采用 SKWIC算法 对向量化的元基因序列进行聚类。 SKWIC是在经典的$k$-means算法基础上增加了自动加权机制的聚类算法~\cite{frigui2004simultaneous}。 $k$-means或者$k$-median方法是现有的非监督学习方法，在这两个方法中，特征是等同对待的。
 然而，在聚类的过程中，它并没有挖掘类和特征集的关系。为了解决这个问题，Frigui等人提出了SKWIC算法，它是$k$-means算法的变形。粗略的说，
@@ -39,7 +39,7 @@
 
 
 SKWIC算法试图最小化下面的目标函数:
-\begin{equation}\label{eq1}
+\begin{equation}\label{eq:9}
 J(K,V;\chi)=
 \sum_{i=1}^{K}
 \sum_{x_{j}\in \chi_{i}}
@@ -52,7 +52,7 @@ v_{ik}D^{k}_{wc_{ij}}
 %\eqno{(1)}
 \end{equation}
 subject to
-\begin{equation}\label{eq2}
+\begin{equation}\label{eq:10}
 v_{ik}
 \in [0,1]\quad
 \forall
@@ -61,21 +61,21 @@ i,k \quad and \quad \sum_{k=1}^{n}v_{ik}=1,\quad \forall i
 \emph{K} 是类的个数, \emph{n} 是特征的个数, 这里是主题的个数。 $X_{i}$ 是第\emph{i}个类的序列个数, $v_{ik}$ 是第\emph{i}个类在第\emph{k} 个特征上的权值, $D^{k}_{wc_{ij}}$ 是第\emph{j}条序列和第\emph{i}个类中心在第\emph{k}维特征上的距离。
 在这个目标函数中，我们应该选择一种距离度量方式。根据\cite{liao2014new}中的结论，和欧式距离以及余弦距离相比，曼哈顿距离在对生物序列进行聚类时效果最佳，因此此处我们也采用曼哈顿距离进行距离度量。
 
-与传统的$K$-means 算法不同，目标函数(\ref{eq1})额外考虑了每一维特征对于每一个类的权重$v_{ik}$。
+与传统的$K$-means 算法不同，目标函数(\ref{eq:9})额外考虑了每一维特征对于每一个类的权重$v_{ik}$。
 $\delta_{i}$ 来权衡$v_{ik}$ 的相对重要性。为了解决这个优化问题，我们采用拉格朗日乘子法，
-\begin{equation}\label{eq3}
+\begin{equation}\label{eq:11}
 v_{ik}=\frac{1}{n}+\frac{1}{2\delta_{i}}\sum_{x_{j}\in\chi_{i}}
 [\frac{\sum_{l=1}^{n}D^{l}_{wc_{ij}}}{n}-D^{k}_{wc_{ij}}]
 \end{equation}
 
-上述等式中的参数$\delta_i$是非常重要的，因为它被用来权衡等式\eqref{eq1}。如果$\delta_i$太小, 等式\eqref{eq1}第二部分的贡献将会被忽视，
-并且类的某一个维度会有相对较大的权重，其他维度可能会有非常小甚至接近0的权重。另一方面，如果$\delta_i$如果太大，每个cluster的所有维度
+上述等式中的参数$\delta_i$是非常重要的，因为它被用来权衡等式\ref{eq:9}。如果$\delta_i$太小, 等式\ref{eq:9}第二部分的贡献将会被忽视，
+并且类的某一个维度会有相对较大的权重，其他维度可能会有非常小甚至接近0的权重。另一方面，如果$\delta_i$如果太大，每个cluster 的所有维度
 都会接近$\frac{1}{n}$
 %The parameter $\delta_{i}$ in the above equations is important because it is used to weight the relative importance of the second component in Eq。~\eqref{eq1}。 If $\delta_{i}$ is too small, then the contribution of the second part in Eq。~\eqref{eq1} will be negligible, and one dimension in cluster $i$ will have a relative high weight {\color{red}compared to} other dimensions, which would have a quite small weight or even a zero weight。 On the other hand, if $\delta_{i}$ is chosen too large, then almost all dimensions in cluster $i$ will be equally weighted by $\frac{1}{n}$ approximately。
 
 $\delta_{i}$ 计算公式如下：
 
-\begin{equation}\label{eq4}
+\begin{equation}\label{eq:12}
 \delta^{(t)}_{i}=K_{\delta}\frac{\sum_{x_{j}\in\chi^{(t-1)}_{i}}\sum_{k=1}^{n}v^{(t-1)}_{ik}(D^{k}_{wc_{ij}})^{(t-1)}}
 {\sum_{k=1}^{n}(v^{(t-1)}_{ik})^2}.
 \end{equation}
@@ -86,10 +86,10 @@ SKWIC的聚类过程就是重复下面的步骤直到类中心不变或者变化范围足够小：
 \begin{enumerate}
 \item 设定聚类个数为 \emph{K}  (序列所属的物种数);
 \item 随机选择 \emph{K} 个类的类中心, 并将权值矩阵设定为$v_{ik}$=$\frac{1}{n}$;
-\item 利用公式~\eqref{eq3}更新权值矩阵$v_{ik}$;
+\item 利用公式~\ref{eq:11}更新权值矩阵$v_{ik}$;
 \item 将序列归到距离它最近的类;
 \item 更新每个类的类中心;
-\item 利用公式~\eqref{eq4}更新$\delta_{i}$
+\item 利用公式~\ref{eq:12}更新$\delta_{i}$
 \end{enumerate}
 \section{小结}
 本章中，我们详细的描述我们的算法，首先用$n$-gram模型来进行特征提取，然后运用LDA模型将序列从$k$-mer空间映射到主题空间，

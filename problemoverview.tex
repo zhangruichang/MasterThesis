@@ -1,5 +1,5 @@
 \chapter{相关工作}
-\rhead{已有的计算方法及主题模型简介}
+\rhead{相关工作}
 %summary
 迄今为止，研究人员已经提出了大量的计算方法来解决这个问题。这些方法可以粗略的归为两类：基于序列相似度和基于组成成分。
 
@@ -10,16 +10,16 @@
 显然，如果没有参考基因组，该方法鞭长莫及。
 \section{基于组成成分的监督学习方法}
 %supervsied
-基于组成成分的方法通常直接从核苷酸序列从抽取序列特征，包括寡核苷酸的频率
+基于组成成分的方法通常直接从核苷酸序列中抽取序列特征，包括寡核苷酸的频率
 GC含量，密码子的使用等等。
 到现在为止，研究人员已经提出了很多基于组成成分的监督学习方法对序列进行归类，包括SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm}等。
 然而这些方法的性能仍然在很大程度上依赖于作为训练样本的基因组。
 \section{基于组成成分的非监督学习方法}
 %unsupervised
-为了克服这些方法的缺点，研究人员又提出非监督来处理未知物种的宏基因组序列。
+为了克服这些方法的缺点，研究人员又提出非监督学习方法来处理未知物种的元基因组序列。
 \subsection{AbundanceBin}
-Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin的方法从序列中抽取$k$-mer，并利用$k$-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。
-具体的，它首先统计序列中$k$-mer词频，定义第i类的基因组大小和丰度水平为$g_{i}$, $\lambda_i$,定义类的个数为S，因为它还提供一种
+Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin的方法。该方法从序列中抽取$k$-mer特征，并利用$k$-mer覆盖率进行归类，以达到区分物种丰度比差异明显的数据的效果。
+具体的，它首先统计序列中$k$-mer词频，定义第$i$类的基因组大小和丰度水平为$g_{i}$, $\lambda_i$,定义类的个数为$S$，因为它还提供一种
 自动决定物种数量的递归归类模式。
 
 定义$\theta$=\{S,~g,~$\lambda_i$\}, 归类算法的目标是最大化观测到的词频向量，和参数$\theta$组成的联合概率的对数值，$logP(x, \theta)$.
@@ -28,42 +28,42 @@ Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin的方法从序列中抽取$k$-mer，并
 AbundanceBin算法如下：
 \begin{enumerate}
 \item 初始化三个隐变量，丰度值$\lambda_i$=10， 基因组大小为$g_i$=1000000
-\item 根据泊松分布，计算第$j$个$k$-mer $w_j$属于第i类的概率，如公式\ref{eq0}\\
-\begin{equation}\label{eq0}
+\item 根据泊松分布，计算第$j$个$k$-mer $w_j$属于第i类的概率，如公式\ref{eq:0}\\
+\begin{equation}\label{eq:0}
 P(w_j \epsilon s_i\mid n(w_j)) = \frac{g_i}{\sum_{m=1}^{S} g_m(\frac{\lambda_m}{\lambda_i})^{n(w_j)} e^{(\lambda_i-\lambda_m)}}
 \end{equation}
-\item 由公式\ref{eq1,eq2}计算$g_i$,$\lambda_i$\\
-\begin{equation}\label{eq1}
+\item 由公式\ref{eq:1}、~\ref{eq:2}计算$g_i$,$\lambda_i$\\
+\begin{equation}\label{eq:1}
 g_i=\sum_{j=1}^{w}P(w_j\epsilon s_i\mid n(w_j))
 \end{equation}
-\begin{equation}\label{eq2}
+\begin{equation}\label{eq:2}
 \lambda_i= \frac{\sum_{j=1}^{W}n(w_j)P(w_j\epsilon s_i\mid n(w_j))}{g_i}
 \end{equation}
 
 \item 迭代2,3步，使得参数收敛或者迭代次数达到一定次数
 \end{enumerate}
-EM算法收敛之后，按照公式\ref{eq3},我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做出归类的决策，
+EM算法收敛之后，按照公式\ref{eq:3},我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做出归类的决策，
 
-\begin{equation}\label{eq3}
+\begin{equation}\label{eq:3}
 P(r_k\epsilon s_i)=\frac{\prod_{w_j\epsilon r_k}P(w_j \epsilon s_i \mid n(w_j))}{\sum_{s_i \epsilon S}(\prod_{w_j\epsilon r_k}P(w_j \epsilon s_i \mid n(w_j)))}
 \end{equation}
 
 其中$r_k$ 是第$k$个序列，$w_j$是$r_k$中的第$j$个$k$-mer, $s_i$ 是任意一个类。一个序列将会被归类为所有类中有最高概率的类。
 
-然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。正如文中~\cite{wu2011novel}所说，他需要和MetaCluster 1.0结合使用，可以取得较好的聚类效果。
+然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。正如文中~\cite{wu2011novel}所说，他需要和MetaCluster 1.0\cite{yang2010metacluster} 结合使用，可以取得较好的聚类效果。
 
 \subsection{MetaCluster 3.0}
 
 AbundanceBin只能处理物种丰度比均匀的数据集，对于丰度比差异较大的数据集，效果差强人意。
-为了处理丰度比均匀以及差异明显都存在的数据集，Leung等人~\cite{leung2011robust}提出了MetaCluster 3.0方法
+为了处理丰度比均匀以及差异明显都存在的数据集，Leung等人提出了MetaCluster 3.0~\cite{leung2011robust}方法。
 
 MetaCluster 3.0具体算法如下：
 \begin{enumerate}
 \item 根据输入序列，计算$k$-mer分布。根据已有文献的结论，$k$=4~是$k$ ~=~2到7里面效果最佳的\cite{chor2009genomic, zhou2008barcodes}
-\item 距离度量采用Spearman Footrule distance\cite{diaconis1977spearman}，这是因为Spearman distance不依赖于数量级，对于有较大值的$k$mer不受太大的影响~\cite{leung2011robust}
+\item 距离度量采用Spearman Footrule distance\cite{diaconis1977spearman}，这是因为Spearman distance不依赖于数量级，对于有较大值的$k$-mer不受太大的影响~\cite{leung2011robust}
 \item 采用$k$-median算法，对原始数据进行自上而下的聚类，采用Spearman Footrule distance距离进行度量。
-    基于公式\ref{eq4}，kmeans算法将样本归类到离它最近的cluster
-\begin{equation}\label{eq4}
+    基于公式\ref{eq:4}，kmeans算法将样本归类到离它最近的cluster
+\begin{equation}\label{eq:4}
     MinE=\sum_{i=1}^{k'}\sum_{A\epsilon C_i}dist_s (A, c_i)
 \end{equation}
 \item 计算每两个Cluster之间的类内距离，如果小于给定的阈值，则归并为一个类。
@@ -77,12 +77,12 @@ MetaCluster 3.0 在序列长为1000bp的均匀和不均匀物种上的表现都优于AbundanceBin。但
 MetaCluster 4.0算法如下：
 \begin{enumerate}
 \item 对原始的read进行概率聚类。由于read较短，聚类的时候可能不利于提取特征，因此先将短序列装配成长的``虚拟重叠群``(virtual contig)。
-该做法是基于这个结果：不同物种基因组中具有相同的长w-mer的概率是非常低的，(来自同一个家族或者gennius水平的序列有相同35-mer的概率$<$0.03\% 和$<$0.22\%)
+该做法是基于这个结果：不同物种基因组中具有相同的长w-mer的概率是非常低的，(来自同一个家族或者属的序列有相同35-mer的概率$<$0.03\% 和$<$0.22\%)
 
 这个过程同时还能减少不均匀丰度比数据集对聚类产生的影响。
 
 \item 估计k-mer分布。基于之前的研究成果，此处k值依然取4。由于每一组序列之间有很多重叠区域，因此不能直接计算所有k-mer的频率作为特征。
-该方法设置T值作为阈值，将出现次数$>=$T的k-mer组成k-mer分布。
+该方法设置T值作为阈值，将出现次数$>=$T的$k$-mer组成$k$-mer分布。
 
 \item 采用和MetaCluster 3.0类似的方法，进行聚类，但是由于MetaCluster 3.0先聚成许多小类，然后归并，可能出现估计的物种数不准确的情况，
 因此MetaCluster 4.0对于聚类的个数进行二分，进而确定最终的类个数。
@@ -92,35 +92,34 @@ MetaCluster 4.0算法如下：
 \subsection{MetaCluster 5.0}
 为了能够处理低丰度短序列数据，Wang等人随后提出了MetaCluster 5.0~\cite{wang2012metacluster2}。该算法基于下述的三个观察现象：
 \begin{enumerate}
-\item  采样自一个基因组的序列的k-mer的频率通常是和数据集中该基因组序列的丰度指是线性正相关的
-\item  较长的w-mer 通常在一个基因组中是不太可能出现多次的\cite{wang2012metacluster1}
-\item  来自一个或者相似的基因组中单个长序列中的短q-mer的分布是相似的
+\item  采样自一个基因组的序列的k-mer的频率通常是和数据集中该基因组序列的丰度指是线性正相关的。
+\item  较长的w-mer 通常在一个基因组中是不太可能出现多次的\cite{wang2012metacluster1}。
+\item  来自一个或者相似的基因组中单个长序列中的短q-mer的分布是相似的。
 \end{enumerate}
 MetaCluster 5.0的算法如下所示：
 \begin{enumerate}
-\item \textbf{第一轮聚类(binning)}，输入是所有的序列
+\item \textbf{第一轮聚类(binning)}，输入是所有的序列。
 
 \item 第一步，过滤掉一些低丰度和极低丰度的序列。\\
 由于之前的很多算法经常难以处理同时混合有高丰度和低丰度数据，因此该算法首先将低丰度和高丰度数据区分开，
-基于观察1，我们可以根据一个序列的$k$-mer频率值来区分高丰度序列和低丰度序列。具体的，定义阈值T，对于一个序列，所有它的$k$-mer频率都小于等于T，则将它归类为低丰度和极低丰度序列，然后将其过滤掉，
-放在第二轮聚类处理。此处T=4\\
+基于观察1，我们可以根据一个序列的$k$-mer频率值来区分高丰度序列和低丰度序列。具体的，定义阈值T，对于一个序列，所有它的$k$-mer 频率都小于等于T，则将它归类为低丰度和极低丰度序列，然后将其过滤掉，
+放在第二轮聚类处理。此处T=4。\\
 
-\item 第二步，根据两个read之间是否有重叠的w-mer，将序列组装为``虚拟重叠群``(virtual contig)
+\item 第二步，根据两个read之间是否有重叠的w-mer，将序列组装为``虚拟重叠群``。
 
-根据观察2，我们可以知道，来自不同物种的序列具有公共w-mer(当w值较大时)的概率是非常小的\cite{wang2012metacluster1}, 此处取w=36。该步处理与MetaCluster 4.0 算法不同之处在于，生成的virtual contig 长度较长，此处可能依然会有低丰度数据混入，因此将virtual contig长度低于1000bp的看成是低丰度数据并过滤到第二轮来处理。此外，MetaCluster 4.0 只是把有重叠w-mer 的序列归在一组，没有进行组装的过程，该算法进行了组装工作，便于后面直接计算$k$-mer分布进行聚类\\
+根据观察2，我们可以知道，来自不同物种的序列具有公共w-mer(当w值较大时)的概率是非常小的\cite{wang2012metacluster1}, 此处取w=36。该步处理与MetaCluster 4.0 算法不同之处在于，生成的``虚拟重叠群`` 长度较长，此处可能依然会有低丰度数据混入，因此将``虚拟重叠群``长度低于1000bp的看成是低丰度数据并过滤到第二轮来处理。此外，MetaCluster 4.0 只是把有重叠w-mer 的序列归在一组，没有进行组装的过程，该算法进行了组装工作，便于后面直接计算$k$-mer分布进行聚类。\\
 
-\item 第三步，
-对组装后的virtual contig进行最后的binning。
+\item 第三步，对组装后的virtual contig进行最后的binning。
 
-具体的，抽取k-mer特征，基于Spearman distance用$k$-means算法进行聚类。此处由于序列丰度较高，k=5.\\
+具体的，抽取k-mer特征，基于Spearman distance用$k$-means算法进行聚类。此处由于序列丰度较高，k=5。\\
 
-\item \textbf{第二轮聚类(binning)}，输入是第一轮过滤掉的序列
+\item \textbf{第二轮聚类(binning)}，输入是第一轮过滤掉的序列。
 
 \item 第一步，和第一轮聚类的第一步相似，但是由于序列都为低丰度和极低丰度数据，丰度降低，因此T值也降低为2，也即序列里全部k-mer频率都是1的序列被认为是极低丰度，被丢弃，不进行后续处理，以此来节约算法的时间和空间代价。
 
-\item 第二步，和第一轮聚类的第二步相似，同样由于序列丰度降低，因此w值降低，此处设为22
+\item 第二步，和第一轮聚类的第二步相似，同样由于序列丰度降低，因此w值降低，此处设为22。
 
-\item 第三步，和第一轮聚类的第三步相似，对组装的virtual contig进行归类，抽取$k$-mer特征进行聚类，此处序列丰度降低，k=4.
+\item 第三步，和第一轮聚类的第三步相似，对组装的``虚拟重叠群`` 进行归类，抽取$k$-mer特征进行聚类，此处序列丰度降低，k=4。
 \end{enumerate}
 
 最后MetaCluster 5.0对高丰度数据进行聚类，低丰度数据也进行聚类，极低丰度数据不聚类，直接丢弃。
@@ -133,21 +132,21 @@ MetaCluster 5.0的算法如下所示：
 并最后将所有的簇进行归类。
 \fi
 \subsection{MCluster}
-最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new}对宏基因组序列进行聚类。他的创新点在于聚类算法在$k$means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
+最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new} 对元基因组序列进行聚类。他的创新点在于聚类算法在$k$means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
 具体算法流程如下：
 \begin{enumerate}
-\item 基于$n$-gram模型，从序列中抽取$k$-mer特征
-\item  采用SKWIC算法\cite{frigui2004simultaneous}对$k$-mer特征表示的序列进行聚类
-\item  采用Sensitivity 和 Precision对效果进行评估
+\item 基于$n$-gram模型，从序列中抽取$k$-mer特征。
+\item  采用SKWIC算法\cite{frigui2004simultaneous}对$k$-mer特征表示的序列进行聚类。
+\item  采用Sensitivity 和 Precision对效果进行评估。
 \end{enumerate}
 %our method
-在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写).这个方法包含三步：
+在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster 的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写)。这个方法包含三步：
 \begin{enumerate}
-\item  用$k$-mer频率向量来表示序列
- \item  通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量
+\item  用$k$-mer频率向量来表示序列。
+ \item  通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量。
  \item  和MCluster\cite{liao2014new}相似，同样采用SKWIC 算法对这些主题分布向量表示的序列进行聚类。
 \end{enumerate}
-我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster.
+我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster。
 实验结果表明，在长序列的模拟数据集上，TM-MCluster取得了优于MetaCluster 3.0， AbundanceBin以及MCluster的性能;
 在短序列的模拟数据上，TM-MCluster在聚类性能上也优于MetaCluster 5.0; 在真实数据集上，TM-MCluster优于已有的4个聚类算法。
 
@@ -156,20 +155,20 @@ MetaCluster 5.0的算法如下所示：
 \subsection{主题模型简介}
 %LDA introduction
 在机器学习和自然语言处理，主题模型是一类在数据集中发现潜在主题信息的一类统计模型。
-主题模型最初是用于文本处理，随后被运用到图像，音频以及音乐处理。最近，有一些研究人员运用主题模型来处理生物数据，
-例如从MEDLINE的生物医学文献摘要中挖掘蛋白质相互作用网络~\cite{aso2009predicting,zheng2006identifying}，构建mRNA模型集合~\cite{gerber2007hierarchical}，以及研究宏基因组功能群落~\cite{chen2012exploiting}.
-为了刻画近义词，计算word和doc距离，Deerwester于1990年提出了LSA(Latent Semantic Analysis);为了更好刻画一次多义，采用多项式分布描述词频向量，并将LSA 模型概率化，提出pLSA; 2003年,David Blei和Andrew Ng将pLSA模型贝叶斯化，采用Dirichlet先验概率，提出经典的(Latent Dirichlet Allocation) LDA 模型\cite{blei2003}。
+主题模型最初是用于文本处理，随后被应用到图像，音频以及音乐处理。最近，有一些研究人员应用主题模型来处理生物数据，
+例如从MEDLINE的生物医学文献摘要中挖掘蛋白质相互作用网络~\cite{aso2009predicting,zheng2006identifying}，构建mRNA模型集合~\cite{gerber2007hierarchical}，以及研究元基因组功能群落~\cite{chen2012exploiting}。
+为了刻画近义词，计算word和doc距离，Deerwester于1990年提出了LSA(Latent Semantic Analysis);为了更好刻画一次多义，采用多项式分布描述词频向量，并将LSA 模型概率化，提出pLSA; 2003年,David Blei 和Andrew Ng将pLSA模型贝叶斯化，采用Dirichlet先验概率，提出经典的(Latent Dirichlet Allocation) LDA 模型\cite{blei2003}。
 
 主题模型最初是用来处理由词袋模型表示的文档，并挖掘潜在主题信息。主题表示隐含的语义主题信息，大量研究结果表明，主题模型比传统的基于关键词模型更能有效的描述文档之间的语义关系。
 
-我们首先介绍LDA模型，然后描述如何运用LDA来抽取元基因组中的潜在主题信息。图\cite{fig:1}中描述了LDA模型。外部碟子表示文档，内部碟子表示一个文档中重复选择的文档和单词。
+我们首先介绍LDA模型，然后描述如何应用LDA来抽取元基因组中的潜在主题信息。图\ref{fig:3}中描述了LDA模型。外部碟子表示文档，内部碟子表示一个文档中重复选择的文档和单词。
 
 \begin{figure}[h!]
 \centering
     \includegraphics[width=9cm]{./example/LDAModel.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
     \caption{LDA图模型。}
-            \label{fig:1}
+            \label{fig:3}
 \end{figure}
 
 
@@ -181,31 +180,67 @@ LDA模型通过下面的过程来生成文档，因此也属于生成模型 \cite{blei2003}:
 \begin{enumerate}
 \item 对于第\emph{d} 篇文档, 初始化$\alpha$ 为随机值, 然后$\theta_{d}\sim$ Dirichlet($\alpha$), \emph{d}$\in$ {1, 2, ..., \emph{D}};
 \item 对于第 \emph{t} 个主题, 初始化 $\beta$ 为随机值, 然后 $\phi_{t}\sim$Dirichlet($\beta$);
-\item 对于第 \emph{d}篇文档的$w_{i}$,  $z_{i}\sim$ Multinomial($\theta_{d}$), $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$).
+\item 对于第 \emph{d}篇文档的$w_{i}$,  $z_{i}\sim$ Multinomial($\theta_{d}$), $w_{i}|z_{i}$ $\sim$Multinomial($\phi_{z_{i}}$)。
 \end{enumerate}
 \subsection{LDA模型求解--Gibbs Sampling}
 我们采用LDA模型来处理元基因组序列，将序列看作文档，$k$mer看作单词。对于给定的元基因组序列，可以采用吉布斯采样蒙特拉罗过程来求解LDA模型的参数
-~\cite{griffiths2004finding}。根据后验概率\ref{eq5}，估计过程需要单独为每个序列每个$k$mer进行采样：
+~\cite{griffiths2004finding}。根据后验概率\ref{eq:5}，估计过程需要单独为每个序列每个$k$mer进行采样：
 
-\begin{equation}\label{eq5}
+\begin{equation}\label{eq:5}
 P(z_{w_{i}}=j|w{_{i}},\mathbf{w{_{-i}}},\mathbf{z{_{-w{_{i}}}}}) \propto \frac{\beta +n^{w_{i}}_{-i,j}}{W\beta+n^{*}_{-i,j}}\cdot \frac{\alpha +n^{d}_{-i,j}}{T\alpha+n^{d}_{-i,*}}
 \end{equation}
 
 $\mathbf{w{_{-i}}}$ 是指除了$w_{i}$以外指派的$k$-mer,
 $\mathbf{z{_{-w{_{i}}}}}$ 是指除了$w_{i}$以外为所有$k$-mer 指派的topic
-$n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为$k$mer指定的topic是j的个数，
-$n^{d}_{-i,j}$ 是指序列d中，除了$w_{i}$以外，指定topic为j的$k$mer总数
-$n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为j的$k$mer总数，
-$n^{d}_{-i,*}$ 是指序列d中除了$w_{i}$以外的$k$-mers总数
+$n^{w_{i}}_{-i,j}$ 是除了$w_{i}$以外，为$k$mer指定的topic是$j$的个数，
+$n^{d}_{-i,j}$ 是指序列$d$中，除了$w_{i}$以外，指定topic为$j$的$k$mer总数
+$n^{*}_{-i,j}$ 除了$w_{i}$以外，指定的topic为$j$的$k$mer总数，
+$n^{d}_{-i,*}$ 是指序列$d$中除了$w_{i}$以外的$k$-mers总数
 
 通过训练LDA模型，我可以得到每个序列的主题分布。
 在我们的模型中，我们设定Dirichlet先验的参数$\alpha$=0.1,  $\beta$=0.01, 这样的参数设定是为了使得主题模型的结果多种多样的。
-\subsection{主题模型在元基因组序列功能群落识别问题中的运用}
 
-\subsection{主题模型在RNA模型识别问题中的的运用}
+\subsection{主题模型在蛋白质相互作用网络预测上的应用}
+蛋白质序列是指蛋白质的一维结构。对于蛋白质序列的分析可以直接应用在蛋白质远同源性(remote homology)匹配问题上，从而分析未知蛋白质。
+想要在主题模型下对蛋白质序列学习，首先要对蛋白质序列进行合适的数据分割定义。合理的数据片段应尽量多的保留信息单元，同时尽量小的切分长度。Pan
+\cite{pan2010large}等人采用主题模型来对预测蛋白质之间相互作用。首先，他利用20种常见氨基酸的偶极性和侧链的体积特性，将20种氨基酸分为7类，通过$k$-mer进行特征提取，k=3, 通过主题模型可以将$k$-mer 空间变换到主题空间，这样主题分布越相似的蛋白质，越可能存在相互作用。
 
-\subsection{主题模型在生物医学文本中的挖掘}
+\subsection{主题模型在蛋白质序列的结构特征表示上的应用}
+随着大量扩展的蛋白质结构数据库，基于蛋白质结构的有效查询是一个重要问题。Shivashankar\cite{shivashankar2011multi}等人提出了一种基于主题模型的蛋白质结构特征表示，以此来提高基于蛋白质结构的查询准确性。首先，他将蛋白质序列划分成若干子结构序列，然后根据序列相似度映射到预先定义好的蛋白质片段库，这样蛋白质序列就可以用预先定义好的更加标准的蛋白质片段表示。
+
+具体的，利用LDA模型学习出主题-标准片段分布，每条序列可以利用主题分布来表示。新的相似度计算公式如\ref{eq:6} \ref{eq:7}所示
+\begin{equation}\label{eq:6}
+FragSimilarity(A, B)=cos(\theta)=\frac{A\cdot B}{\left \| A \right \|\left \| B \right \|}
+\end{equation}
+\begin{equation}\label{eq:7}
+Similarity = \lambda_1*FragSimilarity + \lambda_2*TopicSimilarity
+\end{equation}
+此处$FragSimilarity$表示蛋白质片段的余弦相似度，$TopicSimilarty$ 表示蛋白质主题分布的相似度，此处采用KL散度来计算\ref{eq:8}：
+\begin{equation}\label{eq:8}
+D_{KL}(P\parallel Q)=\prod_{i}P(i)log\frac{P(i)}{Q(i)}
+\end{equation}
+然后利用权重$\lambda$衡量片段结构和主题向量相似度的权重。
+
+
+\subsection{主题模型在元基因组序列功能模块识别问题上的应用}
+Chen\cite{chen2010probabilistic} 等人采用主题模型来识别同一物种公有的基因特征，分析其生物意义。首先他采用$k$-mer对序列进行特征提取，然后应用主题模型LDA\cite{blei2003}进行特征空间变化，以此来学习基因层次的统计模式。LDA模型统计出基因片段的共现性后，结合基于组成成分(composition-based)和基于同源性(homology-based) 的方法学习出
+元基因组序列上的关键功能模块。
+
+\subsection{主题模型在生物医学文本中的挖掘中的应用}
+Markus 使用主题模型来模拟PudMed生物文献数据库摘要索引的生成过程\cite{bundschus2008statistical}。如图\ref{fig:4}所示，$D$表示数据集中文档的个数，其中一篇文档$d$
+表示为长度为$N_d$的单位向量和长度为$M_d$的MeSH(Medical Subject headings thesaurus)索引概念向量。这样每篇文档的生成过程就分为两步：
+首先从单词表选择$w_i$生成文档主体，然后从MeSH中选择关键词$c_i$生成摘要索引部分。
+
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=9cm]{./example/Topic-Concept.pdf}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{主题-概念模型。}
+            \label{fig:4}
+\end{figure}
+
+Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始LDA相比，Topic Concept模型学习出更加丰富的主题，而且提供了重要的额外信息。
 
 \section{小结}
-在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类聚类算法。随后介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的。
+在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类聚类算法。随后介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的，包括蛋白质相互作用网络预测，蛋白质序列结构特征表示，元基因组序列功能模块识别，以及生物医学文本中的挖掘。
 
