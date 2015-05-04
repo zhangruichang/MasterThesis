@@ -5,106 +5,152 @@
     1.1 rbm
     1.2 autoencoder, stack autoencoder
     1.3 optimizerlbfgs
-    1.4 
+    1.4
 
 2 实验部分
 
-3
-
-
-本文提出的方法包含三步：1) 用k-mer频率向量来表示序列 ~2) 通过LDA模型，将每个k-mer频率向量转化为主题分布向量 ~3) 和MCluster一样，用SKWIC
-算法对向量化的序列进行聚类。图~\ref{fig:5}中显示了TM-MCluster的工作流程，随后将给出每一步的具体细节。
-\begin{figure}[h!]
-\centering
-    \includegraphics[width=17cm]{./example/ModulePipeline.pdf}
-    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{TM-MCluster的工作流程。}
-            \label{fig:5}
-\end{figure}
-
- \section{基于k-mer的元基因组序列特征提取}
- 一般来说，k-mer表示序列中k个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用$k$-mer来刻画序列的特征。DNA序列一共有4 种不同的核苷酸，因此一个DNA序列中
- 最多有$4_{k}$个k-mer。一个序列对应的k-mer频率作为其中的一个分量。为了减少计算量，k值不宜取得过大。事实上，不同的k-mer在描述DNA序列方面有不同的
- 影响，正如文献~\cite{chor2009genomic,zhou2008barcodes}中所说的，在2到7的范围里,k=4是最适合表示DNA序列的，因此我们使用k=4 来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中k-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256。
-
-  \section{基于主题模型的特征向量空间变换}
-元基因组中，序列被当成文档，k-mer被当成关键词，来自同一物种的序列应该比不同物种的序列有更多相似的主题信息，因此，对于目前考虑的
-归类问题，主题信息在描述元基因组序列方面可能比k-mer更有效。我们采用隐含狄利克雷分布(LDA)--一个机器学习领域非常流行的主题来处理这个问题。在上一章中，我们也对主题模型进行了介绍。
-用LDA对序列建模之后，我们可以得到每个序列的主题分布。
-图\ref{fig:6}表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示k-mer，
-我们用每个序列的主题分布来表示序列。由于主题的数量通常小于k-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100。
-
-\begin{figure}[h!]
-\centering
-    \includegraphics[width=10cm]{./example/LDARepresentation.eps}
-    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{主题模型在元基因组序列上的应用}
-            \label{fig:6}
-\end{figure}
-
-\section{基于SKWIC算法的元基因组序列聚类}
-%\subsection*{Clustering the vectorized reads by the SKWIC algorithm}
-和MCluster~\cite{liao2014new}一样, 我们采用 SKWIC算法 对向量化的元基因序列进行聚类。 SKWIC是在经典的$k$-means算法基础上增加了自动加权机制的聚类算法~\cite{frigui2004simultaneous}。 $k$-means或者$k$-median方法是现有的非监督学习方法，在这两个方法中，特征是等同对待的。
-然而，在聚类的过程中，它并没有挖掘类和特征集的关系。为了解决这个问题，Frigui等人提出了SKWIC算法，它是$k$-means算法的变形。粗略的说，
-它通过挖掘了$k$-mer偏好性，来提高聚类的性能。而且在miRNA序列聚类\cite{yi2012effective}以及元基因组归类问题\cite{liao2014new}中，$k$-mer偏好性能够提高生物序列的聚类性能的说法, 也同样得到验证。
-
-
-SKWIC算法试图最小化下面的目标函数:
-\begin{equation}\label{eq:9}
-J(K,V;\chi)=
-\sum_{i=1}^{K}
-\sum_{x_{j}\in \chi_{i}}
-%$\sum_{$x_{j}$ $\in$ $\chi$}$
-\sum_{k=1}^{n}
-v_{ik}D^{k}_{wc_{ij}}
-+\sum_{i=1}^{K}\delta_{i}
-\sum_{k=1}^{n}v_{ik}^{2}
-%J(C,V;)
-%\eqno{(1)}
-\end{equation}
-subject to
-\begin{equation}\label{eq:10}
-v_{ik}
-\in [0,1]\quad
-\forall
-i,k \quad and \quad \sum_{k=1}^{n}v_{ik}=1,\quad \forall i
-\end{equation}
-\emph{K} 是类的个数, \emph{n} 是特征的个数, 这里是主题的个数。 $X_{i}$ 是第\emph{i}个类的序列个数, $v_{ik}$ 是第\emph{i}个类在第\emph{k} 个特征上的权值, $D^{k}_{wc_{ij}}$ 是第\emph{j}条序列和第\emph{i}个类中心在第\emph{k}维特征上的距离。
-在这个目标函数中，我们应该选择一种距离度量方式。根据\cite{liao2014new}中的结论，和欧式距离以及余弦距离相比，曼哈顿距离在对生物序列进行聚类时效果最佳，因此此处我们也采用曼哈顿距离进行距离度量。
-
-与传统的$K$-means 算法不同，目标函数(\ref{eq:9})额外考虑了每一维特征对于每一个类的权重$v_{ik}$。
-$\delta_{i}$ 来权衡$v_{ik}$ 的相对重要性。为了解决这个优化问题，我们采用拉格朗日乘子法，
-\begin{equation}\label{eq:11}
-v_{ik}=\frac{1}{n}+\frac{1}{2\delta_{i}}\sum_{x_{j}\in\chi_{i}}
-[\frac{\sum_{l=1}^{n}D^{l}_{wc_{ij}}}{n}-D^{k}_{wc_{ij}}]
-\end{equation}
-
-上述等式中的参数$\delta_i$是非常重要的，因为它被用来权衡等式\ref{eq:9}。如果$\delta_i$太小, 等式\ref{eq:9}第二部分的贡献将会被忽视，
-并且类的某一个维度会有相对较大的权重，其他维度可能会有非常小甚至接近0的权重。另一方面，如果$\delta_i$如果太大，每个cluster 的所有维度
-都会接近$\frac{1}{n}$
-%The parameter $\delta_{i}$ in the above equations is important because it is used to weight the relative importance of the second component in Eq。~\eqref{eq1}。 If $\delta_{i}$ is too small, then the contribution of the second part in Eq。~\eqref{eq1} will be negligible, and one dimension in cluster $i$ will have a relative high weight {\color{red}compared to} other dimensions, which would have a quite small weight or even a zero weight。 On the other hand, if $\delta_{i}$ is chosen too large, then almost all dimensions in cluster $i$ will be equally weighted by $\frac{1}{n}$ approximately。
-
-$\delta_{i}$ 计算公式如下：
-
-\begin{equation}\label{eq:12}
-\delta^{(t)}_{i}=K_{\delta}\frac{\sum_{x_{j}\in\chi^{(t-1)}_{i}}\sum_{k=1}^{n}v^{(t-1)}_{ik}(D^{k}_{wc_{ij}})^{(t-1)}}
-{\sum_{k=1}^{n}(v^{(t-1)}_{ik})^2}.
-\end{equation}
+                      Precision Sensitivity F1
+500k 2class 1-1        0.988922 0.988922 0.988922
+500k 3class 1-1-1     
+500k 3class 1-3-9     
+500k 5class           
+500k 10class          0.721574 0.714996 0.71827
 
 
 
-SKWIC的聚类过程就是重复下面的步骤直到类中心不变或者变化范围足够小：
+\section{深度学习概述}
+深度学习是机器学习的一块新的研究领域，它让机器学习更靠近人工智能的目标。与传统机器学习算法不同，深度学习作为表征学习的一种，在学习的过程中，不需要手工设计数据的特征，而是利用多层神经网络的深层结构，由浅层到深层自动学习对目标有利的数据特征表示，另外，深度学习算法学习到的数据特征表示能够获得数据的内部结构，对于不同的学习任务(例如：分类、回归等)，这种表示都可以使用。而机器学习的特征设计大都是基于特定任务的，不同的学习任务，设计出来的特征不同。
+因此深度学习是一种新型的基于多层神经网络结构的学习算法，它与传统人工神经网络的训练不同，BP算法作为传统多层神经网络的经典训练算法，在多层网络的训练过程中结果很不理想\cite{bengio2009learning}。Bengio 等人\cite{hinton2006fast, bengio2007greedy}基于深度信念网（DBN）提出无监督逐层训练算法，为解决深层结构相关优化难的问题带来希望。LeCun 等人\cite{lecun1998gradient}提出的卷积神经网络（CNNs）是第一个真正多层结构学习算法，它利用空间相对关系减少参数数目以提高$BP$ 训练性能。
+
+\subsection{深度学习的理解}
+数据从输入到输出可以用一个流向图(Flow Graph)来表示\cite{bengio2009learning}，流向图的每个节点表示计算的一步和该步计算得到的值。考虑一个计算集允许每个节点和可能的图结构，并且定义了一个函数族。输入节点没有子节点，输出节点没有父节点。
+一个简单的例子：对于表达如的流向图，可以通过一个有两个输入节点$a$和$b$的图表示，其中一个节点通过使用a和b 作为输入（例如作为孩子节点）来表示$b$/$a$，一个节点使用$a$ 作为输入来表示平方，一个节点使用和作为输入来表示加法项，最后一个输出节点利用单独的加法节点的输入计算$sin$函数。
+这种流向图的一个特别属性是深度(depth)从输入到输出的最长路径的长度。
+传统的前馈神经网络能够被看作拥有等于层数的深度，$SVM$的深度为2（一个对应于核输出或者特征空间，另外一个对应着输入的线性组合）。
+借助深度学习的算法，人类对“抽象概念”的处理有了解决方法。在技术手段方面，有云计算对大数据的并行处理能力。
+
+\subsection{深度学习的实质}
+通过构建具有很多隐层的机器学习模型和海量的训练数据，来学习更有用的特征，从而最终提升分类或预测的准确性。因此，“深度模型”是手段，“特征学习”是目的。与传统的浅层学习不同，深度学习1）强调了模型结构的深度，即多层隐藏层；2）明确突出了特征学习的重要性，也就是说，通过逐层特征变换，将样本在原空间的特征表示变换到一个新特征空间，从而使分类或预测更加容易。与人工规则构造特征的方法相比，利用大数据来学习特征，更能够刻画数据的丰富内在信息。
+
+\subsection{深度学习的动机和原因}
+深度学习的动机在于建立、模拟人脑进行分析学习的神经网络，它模仿人脑的机制来解释数据\cite{bengio2009learning}，例如图像，声音和文本。
+传统神经网络的训练算法的缺点\cite{bengio2013deep}：
 \begin{enumerate}
-\item 设定聚类个数为 \emph{K}  (序列所属的物种数);
-\item 随机选择 \emph{K} 个类的类中心, 并将权值矩阵设定为$v_{ik}$=$\frac{1}{n}$;
-\item 利用公式~\ref{eq:11}更新权值矩阵$v_{ik}$;
-\item 将序列归到距离它最近的类;
-\item 更新每个类的类中心;
-\item 利用公式~\ref{eq:12}更新$\delta_{i}$
+\item 容易出现过拟合，参数很难调节。
+\item 训练速度较慢，当神经网络的层数太多时（大于7层），残差传播到最前面的网络层会变得很小，出现梯度扩散的现象。
+\item 收敛到局部最小值
+\item 只能使用有标签数据来训练，但是实际应用中数据大部分是无标签的。
 \end{enumerate}
+
+卷积神经网络(CNN)作为第一个真正成功训练多层网络结构的学习算法，与DBNs不同，它属于判别型模型，卷积结构的使用也是深度学习在语音、图像和自然语言处理中取得成功的关键因素。卷积神经网络由卷积层和次抽样层组成，其隐藏层的单元有一个时间或者空间位置且只与特定窗口的原始输出的值有关系。CNNs作为深度学习框架是基于最小化预处理数据要求而产生的。受早期的时延神经网络影响，CNNs靠共享时域权值降低复杂度。CNNs是利用空间关系减少参数数目以提高一般前向BP训练的一种拓扑结构，在 CNNs中被称做局部感受区域的图像的一小部分作为分层结构的最底层输入。信息通过不同的网络层次进行传递，因此在每一层能够获取对平移、缩放和旋转不变的观测数据的显著特征。
+之后，不断有新的深层网络结构的提出，和新的训练技巧的提出，如栈式自动编码机，层叠受限玻尔兹曼机，深度玻尔兹曼机，卷积深度信念网等新型网络结构，以及Dropout，Maxout，稀疏性(Sparsity)，权值衰减(Weight-decaying)，去噪(denoising)等技巧的提出，极大地丰富了深度学习算法及其学习框架，
+使得深度学习的应用也不再局限于语音和图像方面，在自然语言处理\cite{collobert2011natural}，时间序列数据建模\cite{boulanger2014phone}方面都取得了很好的成果。
+
+深度学习算法分为有监督学习和无监督学习两种，卷积神经网络属于有监督学习，而深度信念网和自动编码机则属于无监督学习。更严格的讲，对于要解决的实际问题，使用无监督学习算法进行预训练神经网络的权值，然后用来初始化深层神经网络这样网络的性能就会极大提升\cite{erhan2010does}。对于无监督预训练算法，自动编码机在概念上比较简单，但是受限玻尔兹曼机模型对于不同的参数或者不同类型的可视单元和隐藏单元有不同的模型。因此近年来，对于自动编码机的研究偏重于正则化（稀疏、去噪等），而受限玻尔兹曼机不同，它是一种生成模型(Generative Model)，可以抽取样本。另外，由于受限玻尔兹曼机是概率模型，在$log$似然的梯度求解时需要近似算法，因为其梯度是无法求解的，自动编码机则相对简单，用梯度下降法即可求解。
+\section{自动编码机}
+自动编码机属于无监督学习的一种，因为在计算机视觉，语音处理和自然语言处理领域，传统的有监督学习需要人工设计特征，如果设计的特征比较好，那么有监督学习的算法就很有效，但是特征设计是一件费时费力的工作，而且这种特征对于特定问题可以很好地解决，对于其他问题就需要重新设计特征。
+
+自动编码机学习的目标值等于输入值，它学习到的函数是一个恒等函数\cite{alain2012regularized}，它的意义在于学习输入数据的一种表示，这种表示可以重构输入数据，这种表示就是特征。它的结构示意图见图3-1：
+
+图3-1 自动编码机的结构
+设自动编码机的输入为，到隐藏层的第一层映射（也称为编码机）得到的隐含表示 $y \epsilon [0, 1]^{d}$
+\begin{equation}
+y=s(Wx+b)
+\end{equation}
+从隐含表示y映射到输出z来重构输入（也称解码机），z和x的尺寸大小相同。
+\begin{equation}
+z=s(W'y+b')
+\end{equation}
+这里 并不表示转置，z可以看作为x的预测。一般约束为W的转置，这样可以减少训练的参数，但是不加这个约束也可以训练自动编码机。
+该模型的参数有W, b, b'（如果不加约束项，还包括）的优化目标是平均重构误差最小。重构误差可以用很多评定方法，具体选择与输入数据的分布假设有关[12]。一般使用传统的方差测评$L(x, z)=\left \| x-z \right \|^{2}$，或者如果输入数据是二值向量，可以使用交叉熵来测评：
+\begin{equation}
+L_{H}(x,z)=-\sum_{k=1}^{d}[x_klogz_k+(1-x_{k})log(1-z_{k})]
+\end{equation}
+我们希望得到的中间表示y是输入x的分布式表示，当隐含单元数目较小时，自动编码机被迫去学习输入数据的压缩表示，y一般是x的有损压缩，但是如果输入是完全随机的，这个压缩表示将很难学习到，如果输入数据本身具有某种隐藏的特定结构，那么自动编码机就会发现输入数据中的某些相关性，从而将数据输入用低维表示。当隐含单元数目较大时，需要给自动编码机增加一些限制条件来发现输入数据的结构，否则学习到的将是无用的信息，具体地，如果给隐藏神经元加入稀疏性限制，那么自动编码机将会学习到输入数据中的一些有趣的结构。
+令人惊讶的是，当隐含单元个数大于输入数据单元时，非线性自动编码机可以学习到更加有用的表示\cite{DA}。 较为合理的解释是，使用随机梯度下降法训练自动编码机，提前终止迭代与对参数加L2规范项类似。
+
+一个标准的自动编码机的学习算法为算法3-1(本文讨论只有一个隐藏层的自动编码机)：
+
+\begin{algorithm}
+\begin{footnotesize}
+\caption{自动编码机学习算法}\label{alg:ssr-df}
+\begin{algorithmic}[1]
+\REQUIRE ~~\\
+$L$1层特征\\
+\ENSURE ~~\\
+$L$2层特征
+
+\STATE 运行前向传播, 计算$L_{2}$, $L_{3}$层的激活值;
+\STATE 计算输出层$L_{3}$的每个单元$i$的误差值:
+\begin{equation}
+        \delta ^{(3)}=-(y-z)\bullet f^{'}(s^{(3)})
+\end{equation}
+\STATE 对于$l$=2, 1 设
+\begin{equation}
+\delta^{(l)}=((W^{(l)})^{T} \delta ^{(l+1)})\bullet(f'(s^{(l)}))
+\end{equation}
+\STATE 计算损失函数关于参数的偏导数
+\begin{equation}
+\frac{\partial J(W,b;x,y)}{\partial W^{(l)}}=\delta^{(l+1)}(a^{(l)})^{T}
+\end{equation}
+\begin{equation}
+\frac{\partial J(W,b;x,y)}{\partial b^{(l)}}=\delta^{(l+1)}
+\end{equation}
+\STATE 使用LBFGS算法求解神经网络的参数
+\STATE 更新参数
+\end{algorithmic}
+\end{footnotesize}
+\end{algorithm}
+
+
+\section{实验}
+由于深度学习对于数据量较大时才有较明显的效果，因此我们采用500k, 1000k和3000k的序列进行特征学习。
+
+数据表格在上一章已经列出，实验结果如下：
+
+\begin{table}[htbp]
+\centering
+    \caption{自动编码机在11个数据集上的聚类效果。}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}\\
+    \cline{2-4}
+    &\emph{Pr}&\emph{Se}&\emph{F1}\\
+
+  %  \hline
+  %  D1&\textbf{.9989}&.9628	&.9805&	.9877&	.9877	&.9877	&.9882	&\textbf{.9882}	&\textbf{.9882}\\
+    \hline
+    S6&		\textbf{.9997}&	.9648&	.9820	\\
+    \hline
+    S7&		\textbf{.9998}&	.9596&	.9793\\
+    \hline
+    S8&\textbf{1.0000}	&.9612	&.9802\\
+    \hline
+    S9		&\textbf{1.0000}&	.9608&	.9800\\
+    \hline
+    S10	&	\textbf{1.0000}&	.9610&	.9801\\
+    \hline
+    A		&\textbf{1.0000}&	.9618&	.9805\\
+    \hline
+    C	&.7277&	\textbf{.9628}&	.8289\\
+    \hline
+    D	&	.7345&	.9096&	.8127\\
+    \hline
+    E		&	.7489&	\textbf{.9066}&	.8202\\
+    \hline
+    F&	.7275&	\textbf{.9539}&	.8255\\
+    \hline
+    G	&	.7472&	\textbf{.9202}&	.8247\\
+    \hline
+    \end{tabular}
+    \label{tab:1}
+\end{table}
+
+
+
 \section{小结}
-本章中，我们详细的描述我们的算法，首先用$n$-gram模型来进行特征提取，然后运用LDA模型将序列从$k$-mer空间映射到主题空间，
-最后和MCluster类似，运用SKWIC算法对主题向量表示的序列进行聚类。
+本章中，我们介绍了目前非常流行的深度学习，原理以及具体的三种模型，本文是非监督学习任务，采用自动编码机进行特征学习，
+然后和之前一样，采用SKWIC算法进行聚类。
 
 
 
