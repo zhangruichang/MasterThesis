@@ -1,0 +1,40 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\rhead{Abstract}
+%please write the english abstract here
+
+With the rapid development of high-throughput technologies,
+researchers can sequence the whole metagenome of a microbial community
+sampled directly from the environment. The assignment of these metagenomic
+reads into different species or taxonomical classes is a vital step for metagenomic
+analysis, which is referred to as binning  of metagenomic data.
+
+
+Currently, methods can be categoried into two groups: supervised learning and unsupervised learning methods. For supervised learning methods,
+referece genome is needed, and they aligned reads to referece genome, and then bin reads according to the alignment results. However, for real metagenomic datasets, most species are unknown, so supervised methods are not available. So unsupervised learning are more popular recently, researchers proposed AbundanceBin, MetaCluster and MCluster one after another.
+
+
+
+In this paper, we propose a new method TM-MCluster  for binning
+metagenomic reads. First, we represent each metagenomic read as a set of
+¡°k-mers¡± with their frequencies occurring in the read. Then, we employ a
+probabilistic topic model ¡ª the Latent Dirichlet Allocation (LDA) model to the
+reads, which generates a number of hidden ¡°topics¡± such that each read can be
+represented by a distribution vector of the generated topics. Finally, as in the
+MCluster method, we apply SKWIC ¡ª a variant of the classical K-means
+algorithm with automatic feature weighting mechanism to cluster these reads
+represented by topic distributions.
+
+Experiments show that the new method TM-MCluster outperforms
+major existing methods, including AbundanceBin, MetaCluster 3.0/5.0 and
+MCluster. This result indicates that the exploitation of topic modeling can
+effectively improve the binning performance of metagenomic reads.
+
+Furthermore, we also explore deep learning on metagenomic sequences binning task. For unsupervised problem, we exploit auto encoder to learn more useful features based on k-mer features, and utilize SKWIC algorithm to cluster these reads. This method also achieves excellent performance.
+
+\bigskip
+\bigskip
+
+\noindent{\bf Keywords}: Metagenomics, Metagenomic data binning, Topic modeling
+
+ \noindent{\bf Classification Code}: TP311

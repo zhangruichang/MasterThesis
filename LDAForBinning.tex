@@ -1,0 +1,484 @@
+\chapter{基于主题模型的元基因组聚类算法}
+\rhead{基于主题模型的元基因组聚类算法}
+
+本文提出的方法包含三步：1) 用$k$-mer频率向量来表示序列 ~2) 通过LDA模型，将每个$k$-mer频率向量转化为主题分布向量 ~3) 和MCluster一样，用SKWIC
+算法对向量化的序列进行聚类。图~\ref{fig:5}中显示了TM-MCluster的工作流程，随后将给出每一步的具体细节。
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=17cm]{./example/ModulePipeline.pdf}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{TM-MCluster的工作流程。}
+            \label{fig:5}
+\end{figure}
+
+ \section{基于$k$-mer的元基因组序列特征提取}
+ 一般来说，$k$-mer表示序列中$k$个连续字符组成的子序列。元基因组数据来自不同物种的很多序列组成，我们使用$k$-mer来刻画序列的特征。DNA序列一共有4 种不同的核苷酸，因此一个DNA序列中
+ 最多有$4_{k}$个$k$-mer。一个序列对应的$k$-mer频率作为其中的一个分量。为了减少计算量，$k$值不宜取得过大。事实上，不同的$k$-mer在描述DNA序列方面有不同的
+ 影响，正如文献~\cite{chor2009genomic,zhou2008barcodes}中所说的，在2到7的范围里,$k$=4是最适合表示DNA序列的，因此我们使用$k$=4 来表示元基因序列。具体的说，我们滑动一个长为4 的窗口来统计一个序列中$k$-mer的频率，他的互补序列也同样被考虑，因此一个序列的维度是256。
+
+  \section{基于主题模型的特征向量空间变换}
+元基因组中，序列被当成文档，$k$-mer被当成关键词，来自同一物种的序列应该比不同物种的序列有更多相似的主题信息，因此，对于目前考虑的
+归类问题，主题信息在描述元基因组序列方面可能比$k$-mer更有效。我们采用隐含狄利克雷分布(LDA)--一个机器学习领域非常流行的主题来处理这个问题。在上一章中，我们也对主题模型进行了介绍。
+用LDA对序列建模之后，我们可以得到每个序列的主题分布。
+图\ref{fig:6}表示LDA在元基因组序列上的运用，左层图表示DNA序列，中间层表示主题，右层图表示$k$-mer，
+我们用每个序列的主题分布来表示序列。由于主题的数量通常小于$k$-mer的数量，这个过程等价于降维。此处，主题个数是一个可调节参数。在我们实验研究中，我们对于模拟数据和真实数据分别设置主题数为20和100。
+
+\begin{figure}[h!]
+\centering
+    \includegraphics[width=10cm]{./example/LDARepresentation.eps}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{主题模型在元基因组序列上的应用}
+            \label{fig:6}
+\end{figure}
+
+\section{基于SKWIC算法的元基因组序列聚类}
+%\subsection*{Clustering the vectorized reads by the SKWIC algorithm}
+和MCluster~\cite{liao2014new}一样, 我们采用 SKWIC算法 对向量化的元基因序列进行聚类。 SKWIC是在经典的$k$-means算法基础上增加了自动加权机制的聚类算法~\cite{frigui2004simultaneous}。 $k$-means或者$k$-median方法是现有的非监督学习方法，在这两个方法中，特征是等同对待的。
+然而，在聚类的过程中，它并没有挖掘类和特征集的关系。为了解决这个问题，Frigui等人提出了SKWIC算法，它是$k$-means算法的变形。粗略的说，
+它通过挖掘了$k$-mer偏好性，来提高聚类的性能。而且在miRNA序列聚类\cite{yi2012effective}以及元基因组归类问题\cite{liao2014new}中，$k$-mer偏好性能够提高生物序列的聚类性能的说法, 也同样得到验证。
+
+
+SKWIC算法试图最小化下面的目标函数:
+\begin{equation}\label{eq:9}
+J(K,V;\chi)=
+\sum_{i=1}^{K}
+\sum_{x_{j}\in \chi_{i}}
+%$\sum_{$x_{j}$ $\in$ $\chi$}$
+\sum_{k=1}^{n}
+v_{ik}D^{k}_{wc_{ij}}
++\sum_{i=1}^{K}\delta_{i}
+\sum_{k=1}^{n}v_{ik}^{2}
+%J(C,V;)
+%\eqno{(1)}
+\end{equation}
+subject to
+\begin{equation}\label{eq:10}
+v_{ik}
+\in [0,1]\quad
+\forall
+i,k \quad and \quad \sum_{k=1}^{n}v_{ik}=1,\quad \forall i
+\end{equation}
+\emph{K} 是类的个数, \emph{n} 是特征的个数, 这里是主题的个数。 $X_{i}$ 是第\emph{i}个类的序列个数, $v_{ik}$ 是第\emph{i}个类在第\emph{k} 个特征上的权值, $D^{k}_{wc_{ij}}$ 是第\emph{j}条序列和第\emph{i}个类中心在第\emph{k}维特征上的距离。
+在这个目标函数中，我们应该选择一种距离度量方式。根据\cite{liao2014new}中的结论，和欧式距离以及余弦距离相比，曼哈顿距离在对生物序列进行聚类时效果最佳，因此此处我们也采用曼哈顿距离进行距离度量。
+
+与传统的$K$-means 算法不同，目标函数(\ref{eq:9})额外考虑了每一维特征对于每一个类的权重$v_{ik}$。
+$\delta_{i}$ 来权衡$v_{ik}$ 的相对重要性。为了解决这个优化问题，我们采用拉格朗日乘子法，
+\begin{equation}\label{eq:11}
+v_{ik}=\frac{1}{n}+\frac{1}{2\delta_{i}}\sum_{x_{j}\in\chi_{i}}
+[\frac{\sum_{l=1}^{n}D^{l}_{wc_{ij}}}{n}-D^{k}_{wc_{ij}}]
+\end{equation}
+
+上述等式中的参数$\delta_i$是非常重要的，因为它被用来权衡等式\ref{eq:9}。如果$\delta_i$太小, 等式\ref{eq:9}第二部分的贡献将会被忽视，
+并且类的某一个维度会有相对较大的权重，其他维度可能会有非常小甚至接近0的权重。另一方面，如果$\delta_i$如果太大，每个cluster 的所有维度
+都会接近$\frac{1}{n}$
+%The parameter $\delta_{i}$ in the above equations is important because it is used to weight the relative importance of the second component in Eq。~\eqref{eq1}。 If $\delta_{i}$ is too small, then the contribution of the second part in Eq。~\eqref{eq1} will be negligible, and one dimension in cluster $i$ will have a relative high weight {\color{red}compared to} other dimensions, which would have a quite small weight or even a zero weight。 On the other hand, if $\delta_{i}$ is chosen too large, then almost all dimensions in cluster $i$ will be equally weighted by $\frac{1}{n}$ approximately。
+
+$\delta_{i}$ 计算公式如下：
+
+\begin{equation}\label{eq:12}
+\delta^{(t)}_{i}=K_{\delta}\frac{\sum_{x_{j}\in\chi^{(t-1)}_{i}}\sum_{k=1}^{n}v^{(t-1)}_{ik}(D^{k}_{wc_{ij}})^{(t-1)}}
+{\sum_{k=1}^{n}(v^{(t-1)}_{ik})^2}.
+\end{equation}
+
+
+
+SKWIC的聚类过程就是重复下面的步骤直到类中心不变或者变化范围足够小：
+\begin{enumerate}
+\item 设定聚类个数为 \emph{K}  (序列所属的物种数);
+\item 随机选择 \emph{K} 个类的类中心, 并将权值矩阵设定为$v_{ik}$=$\frac{1}{n}$;
+\item 利用公式~\ref{eq:11}更新权值矩阵$v_{ik}$;
+\item 将序列归到距离它最近的类;
+\item 更新每个类的类中心;
+\item 利用公式~\ref{eq:12}更新$\delta_{i}$
+\end{enumerate}
+
+\iffalse
+\section{实验结果}
+这一节中，我们用模拟数据和真实数据来评估我们方法的性能。我们将我们的方法TM-MCluster和现有的MetaCluster3.0/5.0，AbundanceBin和MCluster进行了对比，MCluster是最近的元基因组聚类的非监督方法。
+\fi
+
+\section{数据集}
+\subsection{模拟数据}
+数据由MetaSim\cite{richter2008metasim} (一个基因组和元基因组序列模拟软件)生成。我们从物种丰度各异的物种中采样出元基因组序列数据。
+具体的，我们从NCBI下载了多种微生物的数据库，然后选择了其中的十种物种的基因组采样，生成模拟数据，十个物种名如下：\textit{Pseudomonas\_aeruginosa\_PAO1, Marinobacter\_sp.\_BSs20148, Chromohalobacter\_salexigens\_DSM\_3043, Legionella\_pneumophila\_str, Nitrosococcus\_oceani\_ATCC\_19707, Cycloclasticus\_sp.\_P1, Salmonella\_typhimurium\_LT2, Xanthomonas\_oryzae\_pv.\_oryzae\_KACC10331, \\Aeromonas\_salmonicida\_subsp.\_salmonicida\_A449, Vibrio\_cholerae\_O395}
+
+
+由于MetaCluster 3.0 在长序列上表现良好，我们模拟了不同物种丰度和物种个数(2,3,4,5,10)的长序列数据,序列平均长度设定为1000个碱基，序列个数为5k，16个数据集表示为D1 到D16，由于AbundanceBin是专门处理高丰度的序列，我们同样生成了相对高丰度的序列(50k和500k序列)，序列平均长度1000bp，物种名分别为2,3,5,10种。10 个数据集分别称为S1 到S10。这26个数据集的详细说明在表\ref{tab:1} 和表\ref{tab:2} 中。
+\begin{table}[htbp]
+    \centering
+    \caption{低丰度的模拟数据(序列平均长度1000bp)。}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    D1    & 5k  & 2     & 1:1   \\
+    \hline
+    D2    & 5k  & 2     & 1:2  \\
+    \hline
+    D3    & 5k  & 2     & 1:4   \\
+    \hline
+    D4    & 5k  & 2     & 1:6   \\
+    \hline
+    D5    & 5k  & 2     & 1:8   \\
+    \hline
+    D6    & 5k  & 2     & 1:10  \\
+    \hline
+    D7    & 5k  & 2     & 1:12   \\
+    \hline
+    D8    & 5k  & 3     & 1:1:1  \\
+    \hline
+    D9    & 5k  & 3     & 1:3:9  \\
+    \hline
+    D10   & 5k  & 4     & 1:3:3:9  \\
+    \hline
+    D11   & 5k  & 5     & 1:1:1:1:1  \\
+    \hline
+    D12   & 5k  & 5     & 1:1:3:3:9  \\
+    \hline
+    D13   & 5k  & 10    & 1:1:1:1:1:1:1:1:1:1  \\
+    \hline
+    D14   & 50k  & 3     & 1:3:9  \\
+    \hline
+    D15   & 50k  & 4     & 1:3:3:9  \\
+    \hline
+    D16   & 50k  & 5     & 1:1:3:3:9  \\
+    \hline
+    \end{tabular}
+    \label{tab:1}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{相对高丰度的模拟数据(序列平均长度1000bp)。}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    S1    & 50k  & 2     & 1:1   \\
+    \hline
+    S2    & 50k  & 3     & 1:1:1  \\
+    \hline
+    S3    & 50k  &  3     & 1:3:9   \\
+    \hline
+    S4    & 50k  &  5     & 1:1:3:3:9   \\
+    \hline
+    S5    & 50k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    S6    & 500k  &  2     & 1:1   \\
+    \hline
+    S7    & 500k  &  3     & 1:1:1  \\
+    \hline
+    S8    & 500k  & 3     & 1:3:9   \\
+    \hline
+    S9    & 500k  &  5     & 1:1:3:3:9   \\
+    \hline
+    S10   & 500k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    \end{tabular}
+    \label{tab:2}
+\end{table}
+
+在真实数据集中，包含数以百万的短序列是非常常见的，因此我们也模拟了两个数据集，分别有一百万条平均长度为75bp的序列，分别包含20和50个物种，称为数据集A 和B。数据集A中包含20个物种中，相对测序深度为1、3、5和10的物种数各为5。数据集B中包含了50个物种，有6个物种相对测序深度为6, 5个物种相对测序深度为8,5个物种相对测序深度为10，剩下的物种相对测序深度为1，数据集A和B的详细说明在表\ref{tab:3}中。
+\begin{table}[htbp]
+    \centering
+    \caption{极高丰度模拟数据集(平均序列长度是75bp)。}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    A    & 1million  & 20     & 1 X 5:3 X 5:5 X 5:10 X 5   \\
+    \hline
+    B    & 1million  & 50     & 1 X 34:6 X 6:8 X 5:10 X 5   \\
+    \hline
+    \end{tabular}
+    \label{tab:3}
+\end{table}
+
+由于MetaCluster 5.0只能处理极高丰度的短序列，我们也生成了5个数据集，分别有3000k个长为128bp的短序列，并且将我们的方法与MetaCluster 5.0 进行比较。这些数据集分别称为C、D、E、F、G，数据集的详细说明在\ref{tab:4}中。
+
+\begin{table}[htbp]
+    \centering {
+    \caption{极高丰度模拟数据~(序列平均长度是128bp)。}\label{tab:4}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集} & \textbf{序列数}  & \textbf{物种数} & \textbf{丰度比} \\
+    \hline
+    C    & 3000k   &  2     & 1:1   \\
+    \hline
+    D    & 3000k  &  3     & 1:1:1  \\
+    \hline
+    E    & 3000k  & 3     & 1:3:9   \\
+    \hline
+    F    & 3000k  &  5     & 1:1:3:3:9   \\
+    \hline
+    G   & 3000k  &  10     & 1:1:1:1:1:1:1:1:1:1   \\
+    \hline
+    \end{tabular}}
+\end{table}
+
+\subsection{真实数据集}
+鉴于研究人员已经对NCBI的Acid Mine Drainage元基因组数据\cite{NCBI}进行了大量研究，我们也采用该数据集作为真实数据集来评价我们的方法。这个真实数据集包含2534 个重叠群(contig), 序列长度为
+5000bp，这些重叠群是由103462个高质量的修整过的短序列组装而成的。数据集包括5个已知的物种：\textit{Leptospirillum sp.Group II, Leptospirillum sp.Group III, Ferroplasma acid armanus Type I, Ferroplasma sp.Type II
+and Thermoplasmatales archaeon Gpl} 以及一些来自未知物种的序列。五个物种分别属于两个超界和三个属，分类图如图~\ref{fig:7}所示。序列有2534 个contig。对于包含了未知物种信息序列的数据集，对聚类算法的结果进行评估比较困难，我们删除其中没有物种注释的序列，并得到2424 个contigs，表示为数据集$R1$。
+\begin{figure}[h!]
+  \centerline{\includegraphics[width=16cm]{./example/RealDataset}}
+  %[width=16cm]
+  \caption{数据集R1的物种分类图。}
+  \label{fig:7}
+\end{figure}
+\subsection{评价标准}
+为了评价聚类结果，我们考虑三种度量方法，Precision(Pr)，Sensitivity(Se)以及F1-measure(F1)。 假定有一个元基因组数据集包含了$N$个物种，并最终归到$M$个类中，$R_{ij}$表示第$i$个Cluster中包含第$j$个物种的序列的数量。
+
+Precision和Sensitivity的定义如下所示
+\begin{equation}\label{eq:13}
+Pr=\frac{\sum_{i=1}^{M}\max_{j}(R_{ij})}{\sum_{i=1}^{M}\sum_{j=1}^{N}R_{ij}},
+\end{equation}
+\begin{equation}\label{eq:14}
+\begin{split}
+Se=\frac{\sum_{j=1}^{N}\max_{i}(R_{ij})}{\sum_{i=1}^{M}\sum_{j=1}^{N}R_{ij}+\text{number of unclassified reads}}
+%number\;of\;unclassified\;reads}.
+\end{split}
+\end{equation}
+
+
+上述 "unclassified reads" 表示聚类算法未进行归类的序列。F1-measaure定义如下所示：
+\begin{equation}\label{eq:15}
+F1=\frac{2\ast Pr \ast Se}{Pr+Se}
+\end{equation}
+
+\section{实验结果}
+\subsection{主题个数的影响}
+概率主题模型是一种非监督技术。模型中的主题信息是隐藏的，所以我们需要为每个数据集设定主题个数。此处，我们检测LDA模型中主题个数如何影响TM-MCluster 的聚类性能。我们采用D12数据集，序列来自5个物种，并且修改主题的个数，使之从2到逐渐变化到100，然后观测我们提出算法的性能。图\ref{fig:8} 的结果显示，当主题个数是20 的时候，我们的方法可以
+取得较好的聚类效果。当主题个数为2时，聚类结果差强人意。显然，太少的主题个数可能会导致信息的丢失，太多的主题个数也许会引入噪音，也会影响聚类效果。
+\begin{figure}[h!]
+%\centering
+    \includegraphics[width=16cm]{./example/TopicAnalysis}
+    %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
+    \caption{主题个数对\emph{TM-MCluster}聚类效果的影响。}
+            \label{fig:8}
+\end{figure}
+\subsection{模拟数据集实验结果}
+首先，将我们的方法与MetaCluster3.0 和MCluster在4个均匀分布的数据集上的结果进行比较，数据集D1、D8、D11以及D13分别包含2、3、5以及10个物种。结果显示在表\ref{tab:5} 中。
+\begin{table}[htbp]
+\centering
+    \caption{在相同丰度比的模拟数据集(D1、D8、D11和D12)上的聚类结果。加粗数值表示某个数据集上的最好结果。}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    D1	& \textbf{.9989}&	.9628&	.9805&	.9877&	.9877&	.9877&	.9882&	\textbf{.9882}&	\textbf{.9882}\\
+    \hline
+    D8	& 	.7432&	.9218&	.8229&	.9158&	.9158&	.9158&	\textbf{.9586}&	\textbf{.9586}&	\textbf{.9586}\\
+    \hline
+    D11	& 	.8215&	.8766&	0.8481&	\textbf{.9002}&	\textbf{.9002}&	\textbf{.9002}&	.8394&	.8394&	.8394\\
+    \hline
+    D13	& 	.4335&	\textbf{.8732}&	.5794&	.706&	.6894&	.6976	&\textbf{.7574}&	.7732&	\textbf{.7652}\\
+    \hline
+    \end{tabular}
+    \label{tab:5}
+\end{table}
+从表\ref{tab:5}中可以看出，我们的方法在D1、D8和D11这三个数据集上取得最高的F1值，在D8和D13这两个数据集上取得最高的Precision，在
+D1和D8这两个数据集上取得最高的Sensitivity。结果表明我们的方法在丰度比均匀的数据集上聚类性能优异。
+
+我们同样分析TM-MCluster在12个非均匀分布的数据集上的性能，结果显示在表\ref{tab:6}。在12个测试数据集中，我们的方法分别在10，6和5个数据集上取得了最高的F1、Precision以及Sensitivity。MCluster在三个数据集上取得最好的F1值和sensitivity, 而MetaCluster3.0分别在7个和5个数据集上分别取得最高的Precision 和Sensitivity，但是F1值却差强人意。值得注意的是，我们的方法似乎在分布不均匀的数据集上表现更加优异。
+\begin{table}[htbp]
+\centering
+    \caption{12个非均匀丰度比数据集上的聚类结果。加粗数值表示某个数据集上的最好结果。}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+
+  %  \hline
+  %  D1&\textbf{.9989}&.9628	&.9805&	.9877&	.9877	&.9877	&.9882	&\textbf{.9882}	&\textbf{.9882}\\
+    \hline
+    D2&		\textbf{.9997}&	.9648&	.9820&	.9888&	\textbf{.9888}&	\textbf{.9888}&	.9860&	.9860&	.9860\\
+    \hline
+    D3&		\textbf{.9998}&	.9596&	.9793&	.9950&	\textbf{.9950}&	\textbf{.9950}&	.9948&	.9948&	.9948\\
+    \hline
+    D4&\textbf{1.0000}	&.9612	&.9802&	.9942&	.9942&	.9942&	.9946&	\textbf{.9946}&	\textbf{.9946}\\
+    \hline
+    D5		&\textbf{1.0000}&	.9608&	.9800&	.9950&	.9950&	.9950&	.9954&	\textbf{.9954}	&\textbf{.9954}\\
+    \hline
+    D6	&	\textbf{1.0000}&	.9610&	.9801&	.9966&	\textbf{.9966}&	\textbf{.9966}&	.9966&	\textbf{.9966}	&\textbf{.9966}\\
+    \hline
+    D7		&\textbf{1.0000}&	.9618&	.9805&	.9980&	.9980&	.9980&	.9988&	\textbf{.9988}&	\textbf{.9988}\\
+    \hline
+    D9	&.7277&	\textbf{.9628}&	.8289&	.8974&	.8974&	.8974&	\textbf{.9320}&	.9320&	\textbf{.9320}\\
+    \hline
+    D10	&	.7345&	.9096&	.8127&	.8852&	.8852&	.8852&	\textbf{.9156}	&\textbf{.9156}&	\textbf{.9156}\\
+    \hline
+    D12		&	.7489&	\textbf{.9066}&	.8202&	.8524&	.8524&	.8524&	\textbf{.8930}&	.8930&	\textbf{.8930}\\
+    \hline
+    D14&	.7275&	\textbf{.9539}&	.8255&	.8863&	.8860&	.8863&	\textbf{.9420}&	.9420&	\textbf{.9420}\\
+    \hline
+    D15	&	.7472&	\textbf{.9202}&	.8247&	.8764&	.8764&	.8765&	\textbf{.9070}&	.9070&	\textbf{.9070}\\
+    \hline
+    D16	&	.6792&	\textbf{.9106}&	.778&	.8546&	.8546&	.8546&	\textbf{.8875}&	.8875&	\textbf{.8875}\\
+    \hline
+    \end{tabular}
+    \label{tab:6}
+\end{table}
+
+真实数据集中包含了大量高丰度序列，因此在高丰度数据集上的表现更能体现算法的实际价值。我们将TM-MCluster与AbundanceBin 和MCluster 进行比较，结果如表\ref{tab:7}所示。在10个测试数据集上，我们的方法分别在9、6和8个数据集上取得最高的F1值，Sensitivity 以及Precision，表现最稳定。MCluster 只在数据集S6取得最高的F1值，在数据集S6和S10上取得最高的Precision，\\AbundanceBin
+在4个数据集上取得最高的Sensitivity。综合来看，在较高丰度数据集上，我们方法性能优于其他方法。
+
+\begin{table}[htbp]
+    \centering
+    \caption{高丰度数据集上的聚类结果。加粗数值表示某个数据集上的最好结果。}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AbundanceBin}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    S1&.7258	&.9740&	.8317&	.9875	&.9875&	.9875&	\textbf{.9882}&	\textbf{.9882}&	\textbf{.9882}\\
+    \hline
+    S2&.4047&	.9405&	.5600&	.9154	&.9154&	.9154&	\textbf{.9519}&	\textbf{.9519}&	\textbf{.9519}\\
+    \hline
+    S3&.5866	&.7528	&.6594&	.8873&	.8873&	.8873&\textbf{	.9361}&\textbf{	.9361}&\textbf{	.9361}\\
+    \hline
+    S4&.4106	&\textbf{.9441}&	.5723&	.8554&	.8554&	.8554&\textbf{	.8921}&.8921&\textbf{	.8921}\\
+    \hline
+    S5&.1748	&\textbf{.9871}&	.2970&	.7361&	.7241&	.7301&\textbf{	.7578}&.7546&\textbf{	.7562}\\
+    \hline
+    S6&.7266&	\textbf{.9999}&	.8416&\textbf{	.9873}&.9873&\textbf{	.9873}&	.9869&	.9869&	.9869\\
+    \hline
+    S7&.3991&	\textbf{.9999}&	.5705&	.9173&	.9173&	.9173&	\textbf{.9545}&.9545&\textbf{	.9545}\\
+    \hline
+    S8&.8591&	.8591&	.8591&	.8868&	.8868&	.8868&\textbf{	.9393}&\textbf{	.9393}&\textbf{	.9393}\\
+    \hline
+    S9&.6457&	.6476&	.6466&	.8581&	.8581&	.8581&\textbf{	.8880}&\textbf{	.8880}&\textbf{	.8880}\\
+    \hline
+    S10&.1888&	.7223&	.2993&\textbf{	.7253}&	.7161&	.7207&	.7196&	\textbf{.7317}&	\textbf{.7256}\\
+
+    \hline
+    \end{tabular}
+    \label{tab:7}
+\end{table}
+现实中，越来越多的元基因组数据都是短序列(几百bp)，因此我们通过处理短序列数据来评价我们的方法。由于MetaCluster 3.0 处理短序列能力有限，我们只列出AbundanceBin、MCluster以及我们的方法在数据集A和B(短序列)的性能。结果如表\ref{tab:8}所示和AbundanceBin以及MCluster相比，TM-MCluster 取得了最高的F1 值以及Precision，这和我们方法在长序列上的结果是不谋而合的。
+\begin{table}[htbp]
+    \centering
+    \caption{AbundanceBin，MCluster以及TM-MCluster在短序列数据集上(数据集A，B)的聚类性能。加粗数值表示最好的Precision，Sensitivity和F1 值。}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AbundanceBin}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-10}
+    &Pr&Se&F1&Pr&Se&F1&Pr&Se&F1    \\
+    \hline
+    A&.2270&.9878&.3692&	.2250	&\textbf{1.0000}	&.3674&	\textbf{.3165}&.6471&\textbf{.4251}\\
+    \hline
+    B&.0757&.9878&.1407& .0744	&\textbf{1.0000}&	.1384&\textbf{.1338}&.5836&\textbf{.2177}\\
+    \hline
+    \end{tabular}
+    \label{tab:8}
+\end{table}
+
+
+由于对于大规模的元基因组数据进行聚类耗时费内存，时间和空间效率也是一项重要的评价指标。我们列出AbundanceBin MCluster以及我们的方法在数据集A 和B 上的时间和空间消耗，结果显示在表\ref{tab:9}中。我们可以看出AbundanceBin花费最少的内存，而MCluster运行最快。由于训练LDA是耗时的，TM-MCluster 花费最多的时间，此外空间消耗也较大。
+\begin{table}[htbp]
+    \centering
+    \caption{AbundanceBin、MCluster以及TM-MCluster在短序列数据集(数据集A和B)上的内存和时间消耗。}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{2}{|c|}{\textbf{AbundanceBin}}&\multicolumn{2}{|c|}{\textbf{MCluster}}&\multicolumn{2}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-7}
+    &Memory&Time&Memory&Time&Memory&Time    \\
+    \hline
+    A&3.07GB&2.15h&3.20GB&1.36h& 4.12GB&3.11h\\
+    \hline
+    B&3.20GB&3.20h&3.46GB&2.38h&4.10GB&3.31h\\
+    \hline
+    \end{tabular}
+    \label{tab:9}
+\end{table}
+
+最后，我们还比较了TM-MCluster以及MetaCluster 5.0在数据集C、D、E、F和G上的性能，结果列在表\ref{tab:10}上。结果表明，TM-MCluster在4个数据集上取得明显高于MetaCluster 5.0的Sensitivity，这主要是由于MetaCluster 5.0在聚类时，将低丰度物种的序列都归到小的类里，最后再丢弃。不过，MetaCluster5.0 在五个数据集上都取得较高的Precision。由于F-measure是Sensitivity和precision 上的权衡，我们的方法依然在4个数据集上取得了较高的F-measure。
+此外，MetaCluster 5.0在数据集D差强人意，而这个数据碰巧有最大数量的物种数以及多种多样的丰度比。总而言之，在短序列的高丰度数据集上，
+我们的方法取得优于MetaCluster 5.0的性能。
+\begin{table}[htbp]
+    \centering {
+    \caption{TM-MCluster和MetaCluster 5.0的性能比较。}\label{tab:10}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 5.0}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
+    \cline{2-7}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \hline
+    C&\textbf{.9944}	&.3862&	.5563&	.9793	&\textbf{.9793}&	\textbf{.9793}\\
+    \hline
+    D&\textbf{.9904}&	.4290&	.5986&	.7198	&.\textbf{7198}&	\textbf{.7198}\\
+    \hline
+    E&\textbf{.9770}	&\textbf{.4806}	&\textbf{.6437}&	.6923&	.4645&	.5574\\
+    \hline
+    F&\textbf{.9770}	&.3178&	.4796&	.5801&	\textbf{.4645}&	\textbf{.5159}\\
+    \hline
+    D&\textbf{.8662}	&.0066&	.0131&	.2141&	\textbf{.7988}&	\textbf{.3377}\\
+    \hline
+    \end{tabular}}
+\end{table}
+
+
+
+\subsection{真实数据集实验结果}
+此外，我们还在真实数据集上测试我们方法的性能。从图\ref{tab:11}上，我们知道R1上的序列属于两个超界，三个属以及五个物种，我们考虑按照
+物种分类的不同层次来进行聚类。因此我们预先设定AbundanceBin
+MCluster以及我们的方法的聚类个数分别为2，3和5。由于MetaCluster 3.0可以自动决定最终聚类的个数，我们不用为它设定类的个数。对于我们的方法，主题个数设定为100，最终MetaCluster 3.0 输出了2个类。上述所有结果都显示在表\ref{tab:11}中。
+\begin{table}[htbp]
+    \centering
+    \caption{真实数据集R1上的聚类结果。}
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{Methods} & \textbf{$\#$~Cluster} & \textbf{\emph{Pr}} & \textbf{\emph{Se}} &\textbf{\emph{F1}} \\
+    \hline
+    MetaCluster 3.0   &2 &\textbf{.7328}&.8441&.7845\\
+
+    \hline \multirow{4}{*}{AbundanceBin} & 2 &.3952&\textbf{.9934}&.5655\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &.3952&\textbf{.9934}&.5655\\
+    %\cline{2-5}
+    %& 4 &.3932&.9893&.5627\\
+    \cline{2-5}
+    & 5 &.3952&	\textbf{.9893}&	.5648\\
+
+    \hline \multirow{4}{*}{MCluster} & 2 &.7050&.9422&.8066\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &.7054&.9179&.7978\\
+    %\cline{2-5}
+    %& 4 &.6906&.7397&.7143\\
+    \cline{2-5}
+    & 5 &.6972&.6444&.6698\\
+
+    \hline \multirow{4}{*}{TM-MCluster} & 2 &.7186&.9682&\textbf{.8250}\\
+    \cline{2-5}
+    %\multirow{4}[3]{2cm}{This is another one} & C4a\\
+    & 3 &\textbf{.7211}&.9645&\textbf{.8252}\\
+    %\cline{2-5}
+    %& 4 &.7793&.8284&.8031\\
+    \cline{2-5}
+    & 5 &\textbf{.7182}&.9130&\textbf{.8040}\\
+    \hline
+    \end{tabular}
+    \label{tab:11}
+\end{table}
+尽管MetaCluster 3.0可以自动决定类的个数，他的结果是不准确的，因为R1数据集中有5个物种。对于其他三个方法，AbundanceBin 取得最高的Sensitivity，但是Precision是最低的。对于每个预先设定的聚类个数，我们的方法取得最高的F1值。值得一提的是，当预设类个数为数据集实际物种个数5 时，我们的方法取得最高的Precision以及F1值，以及仅次于AbundanceBin的Sensitivity。
+
+对于AbundanceBin，MCluster以及我们的方法，当预设的聚类个数从2上升到5时，聚类性能出现下降趋势。这是因为，设定聚类个数分别为2、3和5时，会将R1 数据集分别往界、属和类的层次聚类。在一个更高层面的，两个类中心的距离一般来说是大于低层次的类中心，因此再较高层次上更容易聚类。
+
+
+\section{小结}
+本章中，我们详细的描述我们的算法，首先用$n$-gram模型来进行特征提取，然后运用LDA模型将序列从$k$-mer空间映射到主题空间，
+最后和MCluster类似，运用SKWIC算法对主题向量表示的序列进行聚类。我们在模拟数据和真实数据集上，对我们提出的方法进行了全方面的评价，并且与已有的MetaCluster 3.0 /5.0、AbundanceBin 和MCluster 进行了比较分析，结果显示我们的方法在多数数据集上聚类性能都优于上述方法。
+
+
+
+
+
+
+
+
