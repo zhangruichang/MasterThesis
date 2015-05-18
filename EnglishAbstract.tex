@@ -25,12 +25,13 @@ MCluster method, we apply SKWIC ¡ª a variant of the classical K-means
 algorithm with automatic feature weighting mechanism to cluster these reads
 represented by topic distributions.
 
+Furthermore, we also explore deep learning on metagenomic sequences binning task. For unsupervised problem, we exploit auto encoder and RBM to learn more useful features based on k-mer features, and utilize SKWIC algorithm to cluster these reads. This method also achieves excellent performance.
+
 Experiments show that the new method TM-MCluster outperforms
 major existing methods, including AbundanceBin, MetaCluster 3.0/5.0 and
 MCluster. This result indicates that the exploitation of topic modeling can
 effectively improve the binning performance of metagenomic reads.
 
-Furthermore, we also explore deep learning on metagenomic sequences binning task. For unsupervised problem, we exploit auto encoder to learn more useful features based on k-mer features, and utilize SKWIC algorithm to cluster these reads. This method also achieves excellent performance.
 
 \bigskip
 \bigskip
