@@ -16,7 +16,7 @@
 批处理的样本个数为1000，最大迭代次数为500.最终学习的特征个数为512个。我们采用了LBFGS算法\cite{ngiam2011optimization}来求解自动编码机中的参数。
 
 \section{基于RBM的特征学习}
-RBM采用了两层的神经单元组成， 经过参数调节，我们采用1000个特征作为最后学习的特征。我们采用Gibbs采样的方法求解RBM中的参数。
+RBM采用了两层的神经单元组成， 经过参数调节，我们采用1000个特征作为最后学习的特征。我们采用Gibbs 采样的方法求解RBM中的参数。
 
 \section{数据集}
 
@@ -28,35 +28,69 @@ RBM采用了两层的神经单元组成， 经过参数调节，我们采用1000个特征作为最后学习的特征
 
 \section{实验结果}
 
-\subsection{k-mer的影响}
-k=4,和k=5对于实验结果的影响
+\subsection{$k$-mer的影响}
+$k$=4,和$k$=5对于实验结果的影响
 
-当k增大时，特征会变得稀疏，然而深度学习是可以处理这种稀疏性的。我们首先调节好自动编码机的层数，然后观察k=4和k=5的条件下，5个数据集的实验结果对比。
+当$k$增大时，特征会变得稀疏，然而深度学习是可以处理这种稀疏性的。我们首先调节好自动编码机的层数，然后观察$k$=4和$k$=5的条件下，5个数据集的实验结果对比。
 
 \begin{table}[htbp]
 \centering
-    \caption{在相同丰度比的模拟数据集(D1、D8、D11和D12)上的聚类结果。加粗数值表示某个数据集上的最好结果。}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \caption{k=4和5时，自动编码机在500k序列的模拟数据上的聚类结果。加粗数值表示某个数据集上的最好结果。}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
     \hline
-    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{MetaCluster 3.0}}&\multicolumn{3}{|c|}{\textbf{MCluster}}&\multicolumn{3}{|c|}{\textbf{TM-MCluster}}\\
-    \cline{2-10}
-    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{k=4}}&\multicolumn{3}{|c|}{\textbf{k=5}}\\
+    \cline{2-7}
+    &\emph{Pr}&\emph{Se}&\emph{F1}&\emph{Pr}&\emph{Se}&\emph{F1}\\
     \hline
-    D1	& \textbf{.9989}&	.9628&	.9805&	.9877&	.9877&	.9877&	.9882&	\textbf{.9882}&	\textbf{.9882}\\
+    S6	& .9889&	.9889&	.9889&	\textbf{.9913}&	\textbf{.9913}&	\textbf{.9913}\\
     \hline
-    D8	& 	.7432&	.9218&	.8229&	.9158&	.9158&	.9158&	\textbf{.9586}&	\textbf{.9586}&	\textbf{.9586}\\
+    S7	& 	\textbf{.9022}&	\textbf{.9022}&	\textbf{.9022}&	.7325&	.7646&	.7482\\
     \hline
-    D11	& 	.8215&	.8766&	0.8481&	\textbf{.9002}&	\textbf{.9002}&	\textbf{.9002}&	.8394&	.8394&	.8394\\
+    S8	& 	.8450&.8450	&.8450&	\textbf{.8632}&	\textbf{.8632}&	\textbf{.8632}\\
     \hline
-    D13	& 	.4335&	\textbf{.8732}&	.5794&	.706&	.6894&	.6976	&\textbf{.7574}&	.7732&	\textbf{.7652}\\
+    S9	& 	\textbf{.8292}&	\textbf{.8292}&	\textbf{.8292}&	.8244&	.7219&	.7698	\\
+    \hline
+    S10	& 	.7216&	.715&	.7183&	\textbf{.7748}&	\textbf{.7659}&	\textbf{.7703}	\\
     \hline
     \end{tabular}
     \label{tab:5}
 \end{table}
 
+通过查看k=4和k=5时，500k的5个数据集S6-S10在自动编码机上的性能比较，可以看出在S6、S8和S10上k=5时F1值更高。
+S7和S9上k=4时F1值更高。
+
+\subsection{自动编码机个数及层数的影响}
+可以采用多个自动编码机来进行特征的多次提取，这样可以学习到更好的特征。
+具体的，采用多层自动编码机对特征进行学习。
+
+\begin{table}[htbp]
+\centering
+    \caption{自动编码机不同层数的聚类效果。}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \multirow{2}{*}{\textbf{神经网络层数}} & \multicolumn{3}{|c|}{\textbf{AutoEncoder}}\\
+    \cline{2-4}
+    &\emph{Pr}&\emph{Se}&\emph{F1}\\
+
+  %  \hline
+  %  D1&\textbf{.9989}&.9628	&.9805&	.9877&	.9877	&.9877	&.9882	&\textbf{.9882}	&\textbf{.9882}\\
+    \hline
+    512&		.724416&	.718348&	.72136924	\\
+    \hline
+    1024&		.44781&	.40924&	.42765713\\
+    \hline
+    1024 512&.72581	&.72138	&.72358822\\
+    \hline
+    1024 1024 512&.722362	&.716876	&.719608544\\
+    \hline
+    \end{tabular}
+    \label{tab:9}
+\end{table}
+通过实验分析，采用三个自动编码机，层数分别为1024、1024和512时，F1值最高。
+
 
 \subsection{模拟数据集实验结果}
-多层自动编码机可以学习到更好的特征，经过参数调节，我们选择7层的自动编码机进行特征学习，采用4-mer, 输入特征为256， 输出的特征数为512，中间5 层神经网络的特征个数依次为1024、1024、512、1024和1024， 也即采用了3个自动编码机进行特征学习，
+多层自动编码机可以学习到更好的特征，我们选择3个自动编码机进行特征学习，采用4-mer, 输入特征为256， 输出的特征数为512，也即采用了3个自动编码机(SAE)进行特征学习，层数分别为1024、1024和512个。RBM采用4-mer, 输出特征是1000，执行300轮迭代，稀疏项系数为0.01， 惩罚项系数是0.002。
 然后同样采用SKWIC算法对学习到的特征进行聚类，实验结果如表\ref{tab:9}：
 \iffalse
                       Precision Sensitivity F1
@@ -77,12 +111,12 @@ k=4,和k=5对于实验结果的影响
 \fi
 \begin{table}[htbp]
 \centering
-    \caption{采用自动编码机和SKWIC算法在12个数据集上的聚类效果。}
+    \caption{采用自动编码机和RBM在12个数据集上的聚类效果。}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AutoEncoder}}\\
-    \cline{2-4}
-    &\emph{Pr}&\emph{Se}&\emph{F1}\\
+    \multirow{2}{*}{\textbf{Dataset}} & \multicolumn{3}{|c|}{\textbf{AutoEncoder}} & \multicolumn{3}{|c|}{\textbf{RBM}}\\
+    \cline{2-7}
+    &\emph{Pr}&\emph{Se}&\emph{F1} &\emph{Pr}&\emph{Se}&\emph{F1} \\
 
   %  \hline
   %  D1&\textbf{.9989}&.9628	&.9805&	.9877&	.9877	&.9877	&.9882	&\textbf{.9882}	&\textbf{.9882}\\
@@ -114,7 +148,7 @@ k=4,和k=5对于实验结果的影响
     \end{tabular}
     \label{tab:9}
 \end{table}
-
+通过实验结果可以知道，自动编码机聚类效果在12个数据集上都优于RBM。
 
 
 \section{小结}
