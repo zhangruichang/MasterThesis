@@ -12,7 +12,7 @@
 %supervsied
 基于组成成分的方法通常直接从核苷酸序列中抽取序列特征，包括寡核苷酸的频率
 GC含量，密码子的使用等等。
-到现在为止，研究人员已经提出了很多基于组成成分的监督学习方法对序列进行归类，包括SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm}等。
+到现在为止，研究人员已经提出了很多基于组成成分的监督学习方法对序列进行归类，包括SVM~\cite{mchardy2006accurate}，朴素贝叶斯~\cite{stark2010mltreemap}，KNN~\cite{diaz2009tacoa}，Interpolated Markov Model~\cite{brady2009phymm} 等。
 然而这些方法的性能仍然在很大程度上依赖于作为训练样本的基因组。
 \section{基于组成成分的非监督学习方法}
 %unsupervised
@@ -132,7 +132,7 @@ MetaCluster 5.0的算法如下所示：
 并最后将所有的簇进行归类。
 \fi
 \subsection{MCluster}
-最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new} 对元基因组序列进行聚类。他的创新点在于聚类算法在$k$means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster 得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
+最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new} 对元基因组序列进行聚类。他的创新点在于聚类算法在$k$-means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster 得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
 具体算法流程如下：
 \begin{enumerate}
 \item 基于$n$-gram模型，从序列中抽取$k$-mer特征。
@@ -140,14 +140,14 @@ MetaCluster 5.0的算法如下所示：
 \item  采用Sensitivity 和 Precision对效果进行评估。
 \end{enumerate}
 %our method
-在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster 的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering的缩写)。这个方法包含三步：
+在本文中，我们尝试用概率主题模型表示DNA序列的方法来提高MCluster 的性能，并提出了一种新的方法TM-MCluster(Topic Model based Metagenomic reads Clustering 的缩写)。这个方法包含三步：
 \begin{enumerate}
 \item  用$k$-mer频率向量来表示序列。
  \item  通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量。
  \item  和MCluster\cite{liao2014new}相似，同样采用SKWIC 算法对这些主题分布向量表示的序列进行聚类。
 \end{enumerate}
 我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster。
-实验结果表明，在长序列的模拟数据集上，TM-MCluster取得了优于MetaCluster 3.0， AbundanceBin以及MCluster的性能;
+实验结果表明，在长序列的模拟数据集上，TM-MCluster取得了优于MetaCluster 3.0， AbundanceBin以及MCluster 的性能;
 在短序列的模拟数据上，TM-MCluster在聚类性能上也优于MetaCluster 5.0; 在真实数据集上，TM-MCluster优于已有的4个聚类算法。
 
 \section{主题模型在生物数据中的应用}
@@ -240,7 +240,7 @@ Markus 使用主题模型来模拟PudMed生物文献数据库摘要索引的生成过程\cite{bundschus20
             \label{fig:4}
 \end{figure}
 
-Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始LDA相比，Topic Concept模型学习出更加丰富的主题，而且提供了重要的额外信息。
+Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始LDA相比，Topic Concept 模型学习出更加丰富的主题，而且提供了重要的额外信息。
 
 \section{深度学习在生物数据中的应用}
 \subsection{深度学习概述}
@@ -265,11 +265,11 @@ Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始L
 \begin{enumerate}
 \item 容易出现过拟合，参数很难调节。
 \item 训练速度较慢，当神经网络的层数太多时（大于7层），残差传播到最前面的网络层会变得很小，出现梯度扩散的现象。
-\item 收敛到局部最小值
+\item 收敛到局部最小值。
 \item 只能使用有标签数据来训练，但是实际应用中数据大部分是无标签的。
 \end{enumerate}
 
-卷积神经网络(CNN)作为第一个真正成功训练多层网络结构的学习算法，与DBN不同，它属于判别型模型，卷积结构的使用也是深度学习在语音、图像和自然语言处理中取得成功的关键因素。卷积神经网络由卷积层和次抽样层组成，其隐藏层的单元有一个时间或者空间位置且只与特定窗口的原始输出的值有关系。CNN 作为深度学习框架是基于最小化预处理数据要求而产生的。受早期的时延神经网络影响，CNN靠共享时域权值降低复杂度。CNN是利用空间关系减少参数数目以提高一般前向BP 训练的一种拓扑结构，在 CNN中被称做局部感受区域的图像的一小部分作为分层结构的最底层输入。信息通过不同的网络层次进行传递，因此在每一层能够获取对平移、缩放和旋转不变的观测数据的显著特征。
+卷积神经网络(Convolutional Neural Network, CNN)作为第一个真正成功训练多层网络结构的学习算法，与DBN不同，它属于判别型模型，卷积结构的使用也是深度学习在语音、图像和自然语言处理中取得成功的关键因素。卷积神经网络由卷积层和次抽样层组成，其隐藏层的单元有一个时间或者空间位置且只与特定窗口的原始输出的值有关系。CNN 作为深度学习框架是基于最小化预处理数据要求而产生的。受早期的时延神经网络影响，CNN靠共享时域权值降低复杂度。CNN 是利用空间关系减少参数数目以提高一般前向BP 训练的一种拓扑结构，在 CNN中被称做局部感受区域的图像的一小部分作为分层结构的最底层输入。信息通过不同的网络层次进行传递，因此在每一层能够获取对平移、缩放和旋转不变的观测数据的显著特征。
 
 之后，不断有新的深层网络结构的提出，和新的训练技巧的提出，如栈式自动编码机，层叠受限玻尔兹曼机，深度玻尔兹曼机，卷积深度信念网等新型网络结构，以及Dropout，Maxout，稀疏性(Sparsity)，权值衰减(Weight-decaying)，去噪(denoising)等技巧的提出，极大地丰富了深度学习算法及其学习框架，使得深度学习的应用也不再局限于语音和图像方面，在自然语言处理\cite{collobert2011natural}，时间序列数据建模\cite{boulanger2014phone} 方面都取得了很好的成果。
 
@@ -341,7 +341,7 @@ k-mer特征表示的序列\\
 
 
 
-\subsection{RBM}
+\subsection{限制玻尔兹曼机(RBM)}
 %\subsubsection{RBM的结构}
 
 \begin{figure}[h!]
@@ -354,7 +354,7 @@ k-mer特征表示的序列\\
 
 RBM是一种无向图模型，如图~\ref{fig:11}，它由两层神经单元组成，下面一层称为可视层，上面一层称为隐含层，RBM可视层的每个单元与隐含层的n个单元相连接，和其他可视层单元相互独立，隐含层单元类似。RBM模型可视层单元$v$隐含层单元$h$的联合分布服从Boltzmann分布。RBM的参数有隐含层与可视层连接的权重矩阵$W_{n*m}$，可视层单元的偏移量$b=\{b_{1}，b_{2}...b_{m}\}$，隐含层单元的偏移量$c=\{c_{1},c_{2}...c_{n}\}$，这些参数决定了RBM 网络把一个$m$ 维的样本编码成一个$n$ 维的样本，或者成为提取原始数据的$n$个特征。
 
-RBM是一种对称的结构，因此其训练过程相对简单。对于一个训练样本$x=\{x_{1},x_{2}...x_{m}\}$，隐含层第$i$个单元的取值为1的概率为
+RBM是一种对称的结构，因此其训练过程相对简单。对于一个训练样本$x=\{x_{1},x_{2}...x_{m}\}$，隐含层第$i$ 个单元的取值为1的概率为
 \begin{equation}\label{eq:23}
 P(h_{i}=1 | v)=\sigma (\sum_{j=1}^{m} w_{ij}*v_{j}+c_{i})
 \end{equation}
@@ -459,5 +459,5 @@ RBM($V_{1},...V_{m},H_{1},...H_{n}$), 训练样本$S$\\
 其次，他们运用自动编码机来学习特征的表示。最终他们采用学习的特征来训练分类器。
 
 \section{小结}
-在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类聚类算法。随后介绍了机器学习的一类非常重要及流行的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的，包括蛋白质相互作用网络预测，蛋白质序列结构特征表示，元基因组序列功能模块识别，以及生物医学文本中的挖掘。
+在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类聚类算法。随后介绍了机器学习中的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的，包括蛋白质相互作用网络预测，蛋白质序列结构特征表示，元基因组序列功能模块识别，以及生物医学文本中的挖掘。此外我们还介绍了目前非常流行的深度学习概念，自动编码机和RBM，以及深度学习在蛋白质结构预测，可变剪切和疾病诊断上的应用。
 

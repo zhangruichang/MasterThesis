@@ -7,7 +7,7 @@
 %\usepackage{algorithm}
 %\usepackage{algorithmic}
 \usepackage[dvips]{graphicx}
-\usepackage{thesis}
+\usepackage{MasterThesis}
 \usepackage{color}
 %\usepackage{algpseudocode}
 \usepackage{epstopdf}
@@ -17,7 +17,6 @@
 %\usepackage[UTF8]{ctexcap}
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
-\usepackage{graphicx}
  \usepackage{amsmath}
 \usepackage{url}
 \usepackage{subfig}
@@ -103,7 +102,7 @@
 %\newcommand{\AddSurNode}{$\mathsf{AddSurNode}$}
 
 \begin{document}
-\includepdf{MyCover.pdf}
+\includepdf{Cover.pdf}
 
 \begin{CJK*}{GBK}{song}
 
@@ -128,8 +127,8 @@
 \pagenumbering{arabic}
 \song
 
-\include{abstract}
-\include{eabstract}
+\include{ChineseAbstract}
+\include{EnglishAbstract}
 \newpage
 %\addcontentsline{toc}{chapter}{图目录}
 %\listoffigures
@@ -138,13 +137,12 @@
 %\listoftables
 %\newpage
 
-\include{introduction}
+\include{Introduction}
 %\include{relatedwork}
-\include{problemoverview}
-\include{pp2hop}
-\include{muihop}
+\include{ExistingWork}
+\include{LDAForBinning}
 \include{DNNForBinning}
-\include{conclusion}
+\include{Conclusion}
 \rhead{参考文献}
 \addcontentsline{toc}{chapter}{参考文献}
 
@@ -153,11 +151,11 @@
 %\addcontentsline{toc}{chapter}{参考文献}
 %\bibliographystyle{unsrt}
 %\bibliography{reference}
-\bibliographystyle{bmc-mathphys}
-\bibliography{BMCBioinformatics2014}
-\include{paper}
-\include{ack}
-%\includepdf{sign.pdf}
+\bibliographystyle{BmcMathPhys}
+\bibliography{References}
+\include{PaperList}
+\include{Acknowledgement}
+%\includepdf{Sign.pdf}
 \clearpage
 \end{CJK*}
 \end{document}
