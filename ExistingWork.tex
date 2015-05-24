@@ -22,17 +22,17 @@ Wu等人~\cite{wu2011novel}提出了一种称为AbundanceBin的方法。该方法从序列中抽取$k$
 具体的，它首先统计序列中$k$-mer词频，定义第$i$类的基因组大小和丰度水平为$g_{i}$, $\lambda_i$,定义类的个数为$S$，因为它还提供一种
 自动决定物种数量的递归归类模式。
 
-定义$\theta$=\{S,~g,~$\lambda_i$\}, 归类算法的目标是最大化观测到的词频向量，和参数$\theta$组成的联合概率的对数值，$logP(x, \theta)$.
+定义$\theta$=\{S,~g,~$\lambda_i$\}, 归类算法的目标是最大化观测到的词频向量，和参数$\theta$组成的联合概率的对数值，$logP(x, \theta)$。
 隐变量是每个$k$-mer所属类名。随后，采用期望最大化算法(Expectation-Maximization)算法来解决这个优化问题。
 
 AbundanceBin算法如下：
 \begin{enumerate}
-\item 初始化三个隐变量，丰度值$\lambda_i$=10， 基因组大小为$g_i$=1000000
-\item 根据泊松分布，计算第$j$个$k$-mer $w_j$属于第i类的概率，如公式\ref{eq:0}\\
+\item 初始化三个隐变量，丰度值$\lambda_i$=10， 基因组大小为$g_i$=1000000。
+\item 根据泊松分布，计算第$j$个$k$-mer $w_j$属于第i类的概率，如公式\ref{eq:0}:\\
 \begin{equation}\label{eq:0}
 P(w_j \epsilon s_i\mid n(w_j)) = \frac{g_i}{\sum_{m=1}^{S} g_m(\frac{\lambda_m}{\lambda_i})^{n(w_j)} e^{(\lambda_i-\lambda_m)}}
 \end{equation}
-\item 由公式\ref{eq:1}、~\ref{eq:2}计算$g_i$,$\lambda_i$\\
+\item 由公式\ref{eq:1}、~\ref{eq:2}计算$g_i$,$\lambda_i$:\\
 \begin{equation}\label{eq:1}
 g_i=\sum_{j=1}^{w}P(w_j\epsilon s_i\mid n(w_j))
 \end{equation}
@@ -40,9 +40,9 @@ g_i=\sum_{j=1}^{w}P(w_j\epsilon s_i\mid n(w_j))
 \lambda_i= \frac{\sum_{j=1}^{W}n(w_j)P(w_j\epsilon s_i\mid n(w_j))}{g_i}
 \end{equation}
 
-\item 迭代2,3步，使得参数收敛或者迭代次数达到一定次数
+\item 迭代2,3步，使得参数收敛或者迭代次数达到一定次数。
 \end{enumerate}
-EM算法收敛之后，按照公式\ref{eq:3},我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做出归类的决策，
+EM算法收敛之后，按照公式\ref{eq:3},我们可以估计每个序列被归类为每个类的概率，然后依据这一值便可以做出归类的决策，如公式\ref{eq:3}
 
 \begin{equation}\label{eq:3}
 P(r_k\epsilon s_i)=\frac{\prod_{w_j\epsilon r_k}P(w_j \epsilon s_i \mid n(w_j))}{\sum_{s_i \epsilon S}(\prod_{w_j\epsilon r_k}P(w_j \epsilon s_i \mid n(w_j)))}
@@ -50,7 +50,7 @@ P(r_k\epsilon s_i)=\frac{\prod_{w_j\epsilon r_k}P(w_j \epsilon s_i \mid n(w_j))}
 
 其中$r_k$ 是第$k$个序列，$w_j$是$r_k$中的第$j$个$k$-mer, $s_i$ 是任意一个类。一个序列将会被归类为所有类中有最高概率的类。
 
-然而，当数据集的物种丰度比相同时，AbundanceBin表现差强人意。正如文中~\cite{wu2011novel}所说，他需要和MetaCluster 1.0\cite{yang2010metacluster} 结合使用，可以取得较好的聚类效果。
+然而当数据集的物种丰度比相同时，AbundanceBin表现差强人意。正如文中~\cite{wu2011novel}所说，需要和MetaCluster 1.0\cite{yang2010metacluster} 结合使用，可以取得较好的归类效果。
 
 \subsection{MetaCluster 3.0}
 
@@ -59,84 +59,87 @@ AbundanceBin只能处理物种丰度比均匀的数据集，对于丰度比差异较大的数据集，效果差强
 
 MetaCluster 3.0具体算法如下：
 \begin{enumerate}
-\item 根据输入序列，计算$k$-mer分布。根据已有文献的结论，$k$=4~是$k$ ~=~2到7里面效果最佳的\cite{chor2009genomic, zhou2008barcodes}
-\item 距离度量采用Spearman Footrule distance\cite{diaconis1977spearman}，这是因为Spearman distance不依赖于数量级，对于有较大值的$k$-mer不受太大的影响~\cite{leung2011robust}
-\item 采用$k$-median算法，对原始数据进行自上而下的聚类，采用Spearman Footrule distance距离进行度量。
-    基于公式\ref{eq:4}，kmeans算法将样本归类到离它最近的cluster
+\item 根据输入序列，计算$k$-mer分布。根据已有文献的结论，$k$=4~是$k$ ~=~2到7里面效果最佳的\cite{chor2009genomic, zhou2008barcodes}。
+\item 距离度量采用Spearman Footrule distance\cite{diaconis1977spearman}，这是因为Spearman distance不依赖于数量级，对于有较大值的$k$-mer不受太大的影响~\cite{leung2011robust}。
+\item 采用$K$-median算法，对原始数据进行自上而下的归类，采用Spearman Footrule distance距离进行度量。
+    基于公式\ref{eq:4}，$K$-means算法将样本归类到离它最近的类：
 \begin{equation}\label{eq:4}
     MinE=\sum_{i=1}^{k'}\sum_{A\epsilon C_i}dist_s (A, c_i)
 \end{equation}
-\item 计算每两个Cluster之间的类内距离，如果小于给定的阈值，则归并为一个类。
+\item 计算每两个类之间的类内距离，如果小于给定的阈值，则归并为一个类。
 \end{enumerate}
+
 MetaCluster 3.0 在序列长为1000bp的均匀和不均匀物种上的表现都优于AbundanceBin。但是MetaCluster 3.0不适合处理短序列。
 
 
 \subsection{MetaCluster 4.0}
-为了解决短序列聚类的问题，Wang等人提出了MetaCluster 4.0~\cite{wang2012metacluster1}. 该方法基于序列重叠性，将长度小于500bp 的短序列归为一类进行聚类。
+为了解决短序列归类的问题，Wang等人提出了MetaCluster 4.0~\cite{wang2012metacluster1}。 该方法基于序列重叠性，将长度小于500bp 的短序列归为一类进行归类。
 
 MetaCluster 4.0算法如下：
 \begin{enumerate}
-\item 对原始的read进行概率聚类。由于read较短，聚类的时候可能不利于提取特征，因此先将短序列装配成长的``虚拟重叠群``(virtual contig)。
-该做法是基于这个结果：不同物种基因组中具有相同的长w-mer的概率是非常低的，(来自同一个家族或者属的序列有相同35-mer的概率$<$0.03\% 和$<$0.22\%)
+\item 对原始的read进行概率归类。由于read较短，归类的时候可能不利于提取特征，因此先将短序列装配成长的``虚拟重叠群``(virtual contig)。
+该做法是基于这个结果：不同物种基因组中具有相同的长$w$-mer的概率是非常低的，(来自同一个家族或者属的序列有相同35-mer的概率$<$0.03\% 和$<$0.22\%)
 
-这个过程同时还能减少不均匀丰度比数据集对聚类产生的影响。
+这个过程同时还能减少不均匀丰度比数据集对归类产生的影响。
 
-\item 估计k-mer分布。基于之前的研究成果，此处k值依然取4。由于每一组序列之间有很多重叠区域，因此不能直接计算所有k-mer的频率作为特征。
+\item 估计$k$-mer分布。基于之前的研究成果，此处k值依然取4。由于每一组序列之间有很多重叠区域，因此不能直接计算所有$k$-mer的频率作为特征。
 该方法设置T值作为阈值，将出现次数$>=$T的$k$-mer组成$k$-mer分布。
 
-\item 采用和MetaCluster 3.0类似的方法，进行聚类，但是由于MetaCluster 3.0先聚成许多小类，然后归并，可能出现估计的物种数不准确的情况，
-因此MetaCluster 4.0对于聚类的个数进行二分，进而确定最终的类个数。
+\item 采用和MetaCluster 3.0类似的方法，进行归类，但是由于MetaCluster 3.0先聚成许多小类，然后归并，可能出现估计的物种数不准确的情况，
+因此MetaCluster 4.0对于归类的个数进行二分，进而确定最终的类个数。
 \end{enumerate}
 
 
 \subsection{MetaCluster 5.0}
 为了能够处理低丰度短序列数据，Wang等人随后提出了MetaCluster 5.0~\cite{wang2012metacluster2}。该算法基于下述的三个观察现象：
 \begin{enumerate}
-\item  采样自一个基因组的序列的k-mer的频率通常是和数据集中该基因组序列的丰度指是线性正相关的。
-\item  较长的w-mer 通常在一个基因组中是不太可能出现多次的\cite{wang2012metacluster1}。
-\item  来自一个或者相似的基因组中单个长序列中的短q-mer的分布是相似的。
+\item  采样自一个基因组的序列的$k$-mer的频率通常是和数据集中该基因组序列的丰度指是线性正相关的。
+\item  较长的$w$-mer 通常在一个基因组中是不太可能出现多次的\cite{wang2012metacluster1}。
+\item  来自一个或者相似的基因组中单个长序列中的短$q$-mer的分布是相似的。
 \end{enumerate}
+
 MetaCluster 5.0的算法如下所示：
+
 \begin{enumerate}
-\item \textbf{第一轮聚类(binning)}，输入是所有的序列。
+\item \textbf{第一轮归类}，输入是所有的序列。
 
 \item 第一步，过滤掉一些低丰度和极低丰度的序列。\\
 由于之前的很多算法经常难以处理同时混合有高丰度和低丰度数据，因此该算法首先将低丰度和高丰度数据区分开，
 基于观察1，我们可以根据一个序列的$k$-mer频率值来区分高丰度序列和低丰度序列。具体的，定义阈值T，对于一个序列，所有它的$k$-mer 频率都小于等于T，则将它归类为低丰度和极低丰度序列，然后将其过滤掉，
-放在第二轮聚类处理。此处T=4。\\
+放在第二轮归类处理。此处$T$=4。\\
 
-\item 第二步，根据两个read之间是否有重叠的w-mer，将序列组装为``虚拟重叠群``。
+\item 第二步，根据两个序列是否有重叠的$w$-mer将序列组装为``虚拟重叠群''。
 
-根据观察2，我们可以知道，来自不同物种的序列具有公共w-mer(当w值较大时)的概率是非常小的\cite{wang2012metacluster1}, 此处取w=36。 该步处理与MetaCluster 4.0 算法不同之处在于，生成的``虚拟重叠群`` 长度较长，此处可能依然会有低丰度数据混入，因此将``虚拟重叠群``长度低于1000bp的看成是低丰度数据并过滤到第二轮来处理。此外，MetaCluster 4.0 只是把有重叠w-mer 的序列归在一组，没有进行组装的过程，该算法进行了组装工作，便于后面直接计算$k$-mer分布进行聚类。\\
+根据观察2，我们可以知道，来自不同物种的序列具有公共$w$-mer(当$w$值较大时)的概率是非常小的\cite{wang2012metacluster1}, 此处取w=36。 该步处理与MetaCluster 4.0 算法不同之处在于，生成的``虚拟重叠群`` 长度较长，此处可能依然会有低丰度数据混入，因此将``虚拟重叠群`` 长度低于1000bp 的看成是低丰度数据并过滤到第二轮来处理。此外，MetaCluster 4.0 只是把有重叠$w$-mer 的序列归在一组，没有进行组装的过程，该算法进行了组装工作，便于后面直接计算$k$-mer分布进行归类。\\
 
-\item 第三步，对组装后的virtual contig进行最后的binning。
+\item 第三步，对组装后的虚拟重叠群进行最后的归类。
 
-具体的，抽取k-mer特征，基于Spearman distance用$k$-means算法进行聚类。此处由于序列丰度较高，k=5。\\
+具体的，抽取$k$-mer特征，基于Spearman distance用$k$-means算法进行归类。此处由于序列丰度较高，$k$=5。\\
 
-\item \textbf{第二轮聚类(binning)}，输入是第一轮过滤掉的序列。
+\item \textbf{第二轮归类}，输入是第一轮过滤掉的序列。
 
-\item 第一步，和第一轮聚类的第一步相似，但是由于序列都为低丰度和极低丰度数据，丰度降低，因此T值也降低为2，也即序列里全部k-mer 频率都是1的序列被认为是极低丰度，被丢弃，不进行后续处理，以此来节约算法的时间和空间代价。
+\item 第一步，和第一轮归类的第一步相似，但是由于序列都为低丰度和极低丰度数据，丰度降低，因此T值也降低为2，也即序列里全部$k$-mer 频率都是1 的序列被认为是极低丰度，被丢弃，不进行后续处理，以此来节约算法的时间和空间代价。
 
-\item 第二步，和第一轮聚类的第二步相似，同样由于序列丰度降低，因此w值降低，此处设为22。
+\item 第二步，和第一轮归类的第二步相似，同样由于序列丰度降低，因此w值降低，此处设为22。
 
-\item 第三步，和第一轮聚类的第三步相似，对组装的``虚拟重叠群`` 进行归类，抽取$k$-mer特征进行聚类，此处序列丰度降低，k=4。
+\item 第三步，和第一轮归类的第三步相似，对组装的``虚拟重叠群`` 进行归类，抽取$k$-mer特征进行归类，此处序列丰度降低，$k$=4。
 \end{enumerate}
 
-最后MetaCluster 5.0对高丰度数据进行聚类，低丰度数据也进行聚类，极低丰度数据不聚类，直接丢弃。
+最后MetaCluster 5.0对高丰度数据进行归类，低丰度数据也进行归类，极低丰度数据不归类，直接丢弃。
 
 这一系列的MetaCluster算法可以自动确定簇的数目，这对于真实数据中绝大多数序列的物种名未知时是至关重要的。
 \iffalse
 \subsection{MetaCluster-TA}
 2014年 APBC会议上，Wang Yi等研究人员提出了 MetaCluster-TA~\cite{wang2014metacluster}-----通过装配和归类来进行注释的序列分类注释工具。它先将短序列装配成长的“虚拟重叠群”，并
-然后应用类似于MetaCluster 5.0的方法来对这些重叠群和序列进行聚类，
+然后应用类似于MetaCluster 5.0的方法来对这些重叠群和序列进行归类，
 并最后将所有的簇进行归类。
 \fi
 \subsection{MCluster}
-最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new} 对元基因组序列进行聚类。他的创新点在于聚类算法在$k$-means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的聚类算法可以取得更好的聚类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster 得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
+最近廖瑞琪还提出了一种新的非监督方法MCluster~\cite{liao2014new} 对元基因组序列进行归类。他的创新点在于归类算法在$k$-means算法的基础上，有自动加权机制，每个特征对于每个Cluster 都有一个权重，每个Cluster 里面的两个样本之间的距离不是直接每一维距离累加，而是带权的累加。通过实验可以验证，这种加权的归类算法可以取得更好的归类效果。具体而言，在长序列上，MCluster取得了比AbundanceBin以及MetaCluster 3.0明显更优的性能，在短序列上，和MetaCluster 5.0 相比，MCluster 得到了更高的Sensitivity以及相比之下更加稳定的F-measure 值。
 具体算法流程如下：
 \begin{enumerate}
 \item 基于$n$-gram模型，从序列中抽取$k$-mer特征。
-\item  采用SKWIC算法\cite{frigui2004simultaneous}对$k$-mer特征表示的序列进行聚类。
+\item  采用SKWIC算法\cite{frigui2004simultaneous}对$k$-mer特征表示的序列进行归类。
 \item  采用Sensitivity 和 Precision对效果进行评估。
 \end{enumerate}
 %our method
@@ -144,13 +147,13 @@ MetaCluster 5.0的算法如下所示：
 \begin{enumerate}
 \item  用$k$-mer频率向量来表示序列。
  \item  通过LDA~\cite{blei2003}模型将频率向量转化为主题分布向量。
- \item  和MCluster\cite{liao2014new}相似，同样采用SKWIC 算法对这些主题分布向量表示的序列进行聚类。
+ \item  和MCluster\cite{liao2014new}相似，同样采用SKWIC 算法对这些主题分布向量表示的序列进行归类。
 \end{enumerate}
-我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的聚类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster。
+我们用模拟和真实数据对新的方法进行评估，并将它与四个现有的归类方法进行比较，包括MetaCluster 3.0/5.0, AbundanceBin 以及MCluster。
 实验结果表明，在长序列的模拟数据集上，TM-MCluster取得了优于MetaCluster 3.0， AbundanceBin以及MCluster 的性能;
-在短序列的模拟数据上，TM-MCluster在聚类性能上也优于MetaCluster 5.0; 在真实数据集上，TM-MCluster优于已有的4个聚类算法。
+在短序列的模拟数据上，TM-MCluster在归类性能上也优于MetaCluster 5.0; 在真实数据集上，TM-MCluster优于已有的4个归类算法。
 
-\section{主题模型在生物数据中的应用}
+\section{主题模型及其在生物数据处理中的应用}
 
 \subsection{主题模型及LDA}
 %LDA introduction
@@ -167,7 +170,7 @@ MetaCluster 5.0的算法如下所示：
 \centering
     \includegraphics[width=9cm]{./example/LDAModel.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{LDA图模型。}
+    \caption{LDA图模型}
             \label{fig:3}
 \end{figure}
 
@@ -184,7 +187,7 @@ LDA模型通过下面的过程来生成文档，因此也属于生成模型 \cite{blei2003}:
 \end{enumerate}
 
 
-我们采用LDA模型来处理元基因组序列，将序列看作文档，$k$mer看作单词。对于给定的元基因组序列，可以采用吉布斯采样蒙特拉罗过程来求解LDA模型的参数
+我们采用LDA模型来处理元基因组序列，将序列看作文档，$k$mer看作单词。对于给定的元基因组序列，可以采用吉布斯采样蒙特拉罗过程来求解LDA 模型的参数
 ~\cite{griffiths2004finding}。根据后验概率\ref{eq:5}，估计过程需要单独为每个序列每个$k$mer进行采样：
 
 \begin{equation}\label{eq:5}
@@ -201,12 +204,14 @@ $n^{d}_{-i,*}$ 是指序列$d$中除了$w_{i}$以外的$k$-mers总数
 通过训练LDA模型，我可以得到每个序列的主题分布。
 在我们的模型中，我们设定Dirichlet先验的参数$\alpha$=0.1,  $\beta$=0.01, 这样的参数设定是为了使得主题模型的结果多种多样的。
 
-\subsection{主题模型在蛋白质相互作用网络预测上的应用}
+\subsection{应用}
+
+%\subsection{主题模型在蛋白质相互作用网络预测上的应用}
 蛋白质序列是指蛋白质的一维结构。对于蛋白质序列的分析可以直接应用在蛋白质远同源性(remote homology)匹配问题上，从而分析未知蛋白质。
 想要在主题模型下对蛋白质序列学习，首先要对蛋白质序列进行合适的数据分割定义。合理的数据片段应尽量多的保留信息单元，同时尽量小的切分长度。Pan
-\cite{pan2010large}等人采用主题模型来对预测蛋白质之间相互作用。首先，他利用20种常见氨基酸的偶极性和侧链的体积特性，将20种氨基酸分为7类，通过$k$-mer进行特征提取，k=3, 通过主题模型可以将$k$-mer 空间变换到主题空间，这样主题分布越相似的蛋白质，越可能存在相互作用。
+\cite{pan2010large}等人采用主题模型来对预测蛋白质之间相互作用。首先，他利用20种常见氨基酸的偶极性和侧链的体积特性，将20种氨基酸分为7类，通过$k$-mer进行特征提取，$k$=3, 通过主题模型可以将$k$-mer 空间变换到主题空间，这样主题分布越相似的蛋白质，越可能存在相互作用。
 
-\subsection{主题模型在蛋白质序列的结构特征表示上的应用}
+%\subsection{主题模型在蛋白质序列的结构特征表示上的应用}
 随着大量扩展的蛋白质结构数据库，基于蛋白质结构的有效查询是一个重要问题。Shivashankar\cite{shivashankar2011multi}等人提出了一种基于主题模型的蛋白质结构特征表示，以此来提高基于蛋白质结构的查询准确性。首先，他将蛋白质序列划分成若干子结构序列，然后根据序列相似度映射到预先定义好的蛋白质片段库，这样蛋白质序列就可以用预先定义好的更加标准的蛋白质片段表示。
 
 具体的，利用LDA模型学习出主题-标准片段分布，每条序列可以利用主题分布来表示。新的相似度计算公式如\ref{eq:6} \ref{eq:7}所示
@@ -223,11 +228,11 @@ D_{KL}(P\parallel Q)=\prod_{i}P(i)log\frac{P(i)}{Q(i)}
 然后利用权重$\lambda$衡量片段结构和主题向量相似度的权重。
 
 
-\subsection{主题模型在元基因组序列功能模块识别问题上的应用}
+%\subsection{主题模型在元基因组序列功能模块识别问题上的应用}
 Chen\cite{chen2010probabilistic} 等人采用主题模型来识别同一物种公有的基因特征，分析其生物意义。首先他采用$k$-mer对序列进行特征提取，然后应用主题模型LDA\cite{blei2003}进行特征空间变化，以此来学习基因层次的统计模式。LDA模型统计出基因片段的共现性后，结合基于组成成分(composition-based)和基于同源性(homology-based) 的方法学习出
 元基因组序列上的关键功能模块。
 
-\subsection{主题模型在生物医学文本中的挖掘中的应用}
+%\subsection{主题模型在生物医学文本中的挖掘中的应用}
 Markus 使用主题模型来模拟PudMed生物文献数据库摘要索引的生成过程\cite{bundschus2008statistical}。如图\ref{fig:4}所示，$D$表示数据集中文档的个数，其中一篇文档$d$
 表示为长度为$N_d$的单位向量和长度为$M_d$的MeSH(Medical Subject headings thesaurus)索引概念向量。这样每篇文档的生成过程就分为两步：
 首先从单词表选择$w_i$生成文档主体，然后从MeSH中选择关键词$c_i$生成摘要索引部分。
@@ -236,13 +241,13 @@ Markus 使用主题模型来模拟PudMed生物文献数据库摘要索引的生成过程\cite{bundschus20
 \centering
     \includegraphics[width=9cm]{./example/Topic-Concept.pdf}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
-    \caption{主题-概念模型。}
+    \caption{主题-概念模型}
             \label{fig:4}
 \end{figure}
 
-Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始LDA相比，Topic Concept 模型学习出更加丰富的主题，而且提供了重要的额外信息。
+主题概念不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始LDA相比，主题概念模型学习出更加丰富的主题，而且提供了重要的额外信息。
 
-\section{深度学习在生物数据中的应用}
+\section{深度学习及其在生物数据处理中的应用}
 \subsection{深度学习概述}
 深度学习是机器学习的一块新的研究领域，它让机器学习更靠近人工智能的目标。与传统机器学习算法不同，深度学习作为表征学习的一种，在学习的过程中，不需要手工设计数据的特征，而是利用多层神经网络的深层结构，由浅层到深层自动学习对目标有利的数据特征表示，另外，深度学习算法学习到的数据特征表示能够获得数据的内部结构，对于不同的学习任务(例如：分类、回归等)，这种表示都可以使用。而机器学习的特征设计大都是基于特定任务的，不同的学习任务，设计出来的特征不同。
 因此深度学习是一种新型的基于多层神经网络结构的学习算法，它与传统人工神经网络的训练不同，BP算法作为传统多层神经网络的经典训练算法，在多层网络的训练过程中结果很不理想\cite{bengio2009learning}。Bengio 等人\cite{hinton2006fast, bengio2007greedy}基于深度信念网（DBN）提出无监督逐层训练算法，为解决深层结构相关优化难的问题带来希望。LeCun 等人\cite{lecun1998gradient}提出的卷积神经网络（CNNs）是第一个真正多层结构学习算法，它利用空间相对关系减少参数数目以提高BP训练性能。
@@ -269,7 +274,7 @@ Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始L
 \item 只能使用有标签数据来训练，但是实际应用中数据大部分是无标签的。
 \end{enumerate}
 
-卷积神经网络(Convolutional Neural Network, CNN)作为第一个真正成功训练多层网络结构的学习算法，与DBN不同，它属于判别型模型，卷积结构的使用也是深度学习在语音、图像和自然语言处理中取得成功的关键因素。卷积神经网络由卷积层和次抽样层组成，其隐藏层的单元有一个时间或者空间位置且只与特定窗口的原始输出的值有关系。CNN 作为深度学习框架是基于最小化预处理数据要求而产生的。受早期的时延神经网络影响，CNN靠共享时域权值降低复杂度。CNN 是利用空间关系减少参数数目以提高一般前向BP 训练的一种拓扑结构，在 CNN中被称做局部感受区域的图像的一小部分作为分层结构的最底层输入。信息通过不同的网络层次进行传递，因此在每一层能够获取对平移、缩放和旋转不变的观测数据的显著特征。
+卷积神经网络(Convolutional Neural Network, CNN)作为第一个真正成功训练多层网络结构的学习算法，与DBN不同，它属于判别型模型，卷积结构的使用也是深度学习在语音、图像和自然语言处理中取得成功的关键因素。卷积神经网络由卷积层和次抽样层组成，其隐藏层的单元有一个时间或者空间位置且只与特定窗口的原始输出的值有关系。CNN 作为深度学习框架是基于最小化预处理数据要求而产生的。受早期的时延神经网络影响，CNN 靠共享时域权值降低复杂度。CNN 是利用空间关系减少参数数目以提高一般前向BP 训练的一种拓扑结构，在 CNN中被称做局部感受区域的图像的一小部分作为分层结构的最底层输入。信息通过不同的网络层次进行传递，因此在每一层能够获取对平移、缩放和旋转不变的观测数据的显著特征。
 
 之后，不断有新的深层网络结构的提出，和新的训练技巧的提出，如栈式自动编码机，层叠受限玻尔兹曼机，深度玻尔兹曼机，卷积深度信念网等新型网络结构，以及Dropout，Maxout，稀疏性(Sparsity)，权值衰减(Weight-decaying)，去噪(denoising)等技巧的提出，极大地丰富了深度学习算法及其学习框架，使得深度学习的应用也不再局限于语音和图像方面，在自然语言处理\cite{collobert2011natural}，时间序列数据建模\cite{boulanger2014phone} 方面都取得了很好的成果。
 
@@ -281,8 +286,8 @@ Topic Concept不但模拟了文档生成过程，而且模拟了文档被MeSH概念索引的部分。与原始L
 自动编码机学习的目标值等于输入值，它学习到的函数是一个恒等函数\cite{alain2012regularized}，它的意义在于学习输入数据的一种表示，这种表示可以重构输入数据，这种表示就是特征。它的结构示意图见图\ref{fig:9}:
 
 \begin{figure}[h!]
-%\centering
-    \includegraphics[width=16cm]{./example/AutoEncoder}
+    \centering
+    \includegraphics[width=11cm]{./example/AutoEncoder.jpg}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
     \caption{自动编码机的结构}
             \label{fig:9}
@@ -313,7 +318,7 @@ L_{H}(x,z)=-\sum_{k=1}^{d}[x_klogz_k+(1-x_{k})log(1-z_{k})]
 \caption{自动编码机学习算法}\label{alg:ae}
 \begin{algorithmic}[1]
 \REQUIRE ~~\\
-k-mer特征表示的序列\\
+$k$-mer特征表示的序列\\
 \ENSURE ~~\\
 自动编码机学习到的特征表示的序列
 
@@ -346,7 +351,7 @@ k-mer特征表示的序列\\
 
 \begin{figure}[h!]
 %\centering
-    \includegraphics[width=16cm]{./example/RBM.eps}
+    \includegraphics[width=13cm]{./example/RBM.eps}
     %\caption{\csentence{The pipeline of the \emph{TM-MCluster} method.}
     \caption{RBM的结构}
             \label{fig:11}
@@ -407,7 +412,7 @@ Gibbs采样是一种基于马尔科夫蒙塔卡罗策略的采样方法。具体来说，对于一个d维的随机向
 \end{equation}
 式\ref{eq:28}进行了$k$步采样，一般$k$要很大，比较费时，Hinton提出了一个简化的Gibbs采样方法[17]，可以以较少的步数收敛到样本的联合概率分布。
 %\subsubsection{基于对比散度的快速学习算法}
-对比散度是Hinton在2005年提出的一种训练RBM的方法\cite{carreira2005contrastive}，其主要思想是使用训练样本初始化，然后进行$k$次Gibbs抽样，就可以得到较好的近似。而实际应用时$k$取值并不需要太大，本文$k$取2。
+对比散度是Hinton在2005年提出的一种训练RBM的方法\cite{carreira2005contrastive}，其主要思想是使用训练样本初始化，然后进行$k$次Gibbs 抽样，就可以得到较好的近似。而实际应用时$k$取值并不需要太大，本文$k$取2。
 其算法伪代码描述为：
 
 \begin{algorithm}
@@ -439,7 +444,9 @@ RBM($V_{1},...V_{m},H_{1},...H_{n}$), 训练样本$S$\\
 \end{algorithmic}
 \end{footnotesize}
 \end{algorithm}
-\subsection{深度学习在蛋白质结构预测上的应用}
+\subsection{应用}
+
+%\subsection{深度学习在蛋白质结构预测上的应用}
 蛋白质结构预测是通过氨基酸序列来预测蛋白质的三维结构，换句话说，是通过蛋白质的一级结构来预测他的二级，三级和四级以及折叠结构。蛋白质结构预测和蛋白质设计的反问题从根本上说是不同的。蛋白质结构预测是生物信息和理论化学领域非常重要的问题，尤其在医学(例如药物设计), 和生物科技(例如新的酶的设计)至关重要。每两年，当前方法的性能在CASP实验中就会进行评估一次。
 
 从头开始的蛋白质二级结构预测被用来进行三级结构预测，由于蛋白质组学的快速发展，预测的需求急剧增加。然而，最近的方法已经停滞在80\%的准确率上，
@@ -448,16 +455,16 @@ RBM($V_{1},...V_{m},H_{1},...H_{n}$), 训练样本$S$\\
 他们的深度网络以及取得了80.7\%的准确性，也成为了目前最好的方法。在他们的网络中，他们采用逐层非监督预训练方法来学习DBN。和其他方法例如PSSpred，SSpro，PSIPRED，RaptorX在数据集CASP9和CASP10的结果相比，
 他们的方法和PSSpred是得分最高的工具。
 
-\subsection{深度学习在可变剪切上的应用}
+%\subsection{深度学习在可变剪切上的应用}
 可变剪切在生物复合物和它在人类疾病中的反向调控扮演着至关重要的作用。此处，我们描述了剪切编码的装配，它采用RNA几百个特征的组合来预测器官相关
 变化。
 
 以前对于剪切编码的研究是基于贝叶斯神经网路(BNN)的，其中一个优势就是BNN可以通过集成模型来防止过拟合。然而，当处理大数据集时，MCMC方法可能会非常慢。Leung\cite{leung2014deep}提出了一个DNN模型，该模型可以同时预测单个器官中的剪切模式和不同器官之间的模式差异。这个DNN结构有三层隐含层，输出层由三个softmax 分类构成。结构显示，DNN性能优于BNN，因为深层结构可以处理数据中的复杂关系。
 
-\subsection{深度学习在疾病诊断上的应用}
+%\subsection{深度学习在疾病诊断上的应用}
 研究人员已经采用机器学习方法来进行疾病诊断并且取得了非常好的结果。特别地，贝叶斯网络解决这个问题具有天然优势，其他得方法例如SVM和神经网络也同样效果不错。然而当面临一些不太常见的疾病例如癌症仍然有很多挑战。由于这些疾病不太常见，训练样本集较小，而且他们的特征空间往往是高维的。这些问题难以解决，并且容易出现过拟合。用来训练的特征往往是手动设计，因此特征是与任务有关的。最近，Fakoor\cite{fakoor2013using}采用了非监督的特征学习，以及深度学习方法来处理癌症诊断，并提出了一个较一般性的癌症分类器。他采用了自动编码机和稀疏自动编码机进行特征学习。首先，他们采用PCA进行特征降维来保留信息内容。
 其次，他们运用自动编码机来学习特征的表示。最终他们采用学习的特征来训练分类器。
 
 \section{小结}
-在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类聚类算法。随后介绍了机器学习中的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的，包括蛋白质相互作用网络预测，蛋白质序列结构特征表示，元基因组序列功能模块识别，以及生物医学文本中的挖掘。此外我们还介绍了目前非常流行的深度学习概念，自动编码机和RBM，以及深度学习在蛋白质结构预测，可变剪切和疾病诊断上的应用。
+在本章中，我们介绍了元基因组归类问题的相关工作，包括目前已有的两类算法：基于序列相似度以及基于组成成分两类归类算法。随后介绍了机器学习中的主题模型，以LDA作为代表模型，简单介绍了LDA 的来龙去脉，LDA图模型，采用Gibbs Sampling方法进行求解等，以及目前主题模型在生物数据中是如何来解决问题的，包括蛋白质相互作用网络预测，蛋白质序列结构特征表示，元基因组序列功能模块识别，以及生物医学文本中的挖掘。此外我们还介绍了目前非常流行的深度学习概念，自动编码机和RBM，以及深度学习在蛋白质结构预测，可变剪切和疾病诊断上的应用。
 
