@@ -10,8 +10,8 @@ reads into different species or taxonomical classes is a vital step for metageno
 analysis, which is referred to as binning  of metagenomic data.
 
 
-Currently, methods can be categoried into two groups: similarity-based methods and component-based methods. For similarity-based methods,
-referece genome is needed, and they align reads to referece genome, and then bin reads according to the alignment results. However, for real metagenomic datasets, most species are unknown, so these methods are not available. Component-based methods first directly analyze the sequences and extract features to represent sequences. As reference genomes are not needed, unsupervised learning are more popular recently, researchers proposed AbundanceBin, MetaCluster and MCluster one after another.
+Currently, methods of metagenomic data binning can be categoried into two groups: similarity-based methods and component-based methods. For similarity-based methods,
+referece genome is needed, and they align reads to referece genome, and then bin reads according to the alignment results. However, for real metagenomic datasets, most species are unknown, so these methods are not applicable. Component-based methods first directly analyze the sequences and extract features to represent sequences. As reference genomes are not needed, unsupervised learning based methods are popular recently, a number of such methods including AbundanceBin, MetaCluster, MCluster, etc. are developed.
 
 In this paper, we propose a new method TM-MCluster  for binning
 metagenomic reads. First, we represent each metagenomic read as a set of
@@ -23,13 +23,12 @@ MCluster method, we apply SKWIC ¡ª a variant of the classical K-means
 algorithm with automatic feature weighting mechanism to cluster these reads
 represented by topic distributions.
 
-Furthermore, we also explore deep learning on metagenomic sequences binning task. For unsupervised problem, we exploit auto encoder and RBM to learn more useful features based on k-mer features, and utilize SKWIC algorithm to cluster these reads. This method also achieves excellent performance.
+Furthermore, we also explore deep learning for metagenomic sequences binning task. Firstly, we exploit AutoEncoder and RBM to learn useful features based on $k$-mer features, then utilize SKWIC algorithm to cluster these reads. This method also achieves satisfactory performance.
 
 Experiments show that the new method TM-MCluster outperforms
 major existing methods, including AbundanceBin, MetaCluster 3.0/5.0 and
 MCluster. This result indicates that the exploitation of topic modeling can
-effectively improve the binning performance of metagenomic reads. Our experiments show that deep learning also improve the performance of 
-binning.
+effectively improve the binning performance of metagenomic reads. Our experiments show that deep learning also can improve the performance of binning.
 
 
 \bigskip
